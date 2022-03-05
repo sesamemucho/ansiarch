@@ -1,0 +1,9 @@
+---
+- name: Create new RPI image file
+  ansible.builtin.shell:
+    cmd: "{{ lookup('template', 'rpi-img.sh.j2') }}"
+  register: rpi_image_result
+
+- name: debug2
+  ansible.builtin.debug:
+    var: rpi_image_result.stdout_lines

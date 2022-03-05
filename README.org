@@ -1,0 +1,12 @@
+* ansible-archlinux
+
+Combination of 
+[[https://github.com/sesamemucho/ssmm-ansible-arch-install][sesamemucho/ssmm-ansible-arch-install]] and
+[[https://github.com/sesamemucho/ssmm-ansible-home][sesamemucho/ssmm-ansible-home]] plus changes.
+This project produces base images for a Raspberry Pi and an
+Intel-based Arch Linux PC. Using one of the base images, the project
+can then install ArchLinux, customized per hostname.
+
+The above repos were originally forked from
+[[jsf9k/ansible-arch-install][https://github.com/jsf9k/ansible-arch-install]] and 
+[[jsf9k/ansible-home][https://github.com/jsf9k/ansible-home]].

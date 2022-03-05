@@ -1,0 +1,38 @@
+---
+# Get rid of interpreter discovery warning
+ansible_python_interpreter: /usr/bin/python
+
+ansible_ssh_common_args: -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
+
+base_wired_addr: "155.42"
+base_wireless_addr: "155.43"
+
+install_drive: /dev/sda
+use_wireless: no
+wired_interface: enp3s0
+boot_partition_suffix: '1'
+root_partition_suffix: '2'
+root_filesystem: 'btrfs'
+luks_keyfile: home_keyfile
+partition_number:
+  bios:
+    boot_suffix: '2'
+    root_suffix: '3'
+  efi:
+    boot_suffix: '1'
+    root_suffix: '2'
+
+partitions:
+  bios:
+    - { num: 1, start: "0%", end: "1MB", name: "bios" }
+    - { num: 2, start: "1MB", end: "513MB", name: "boot" }
+    - { num: 3, start: "513MB", end: "100%", name: "root" }
+  efi:
+    - { num: 1, start: "0%", end: "512MB", name: "boot" }
+    - { num: 2, start: "513MB", end: "100%", name: "root" }
+partition_flags:
+  bios:
+    - { num: 1, flags: 'bios_grub' }
+  efi:
+    - { num: 1, flags: 'esp' }
+

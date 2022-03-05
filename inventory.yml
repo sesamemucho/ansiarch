@@ -1,0 +1,31 @@
+---
+vm:
+  hosts:
+    testing-bios:
+    testing-efi:
+
+rpi:
+  hosts:
+    uriel:
+
+baremetal:
+  hosts:
+    michiba:
+    sakai:
+    kaga:
+    metatron:
+
+support:
+  hosts:
+    localhost:
+
+home:
+  children:
+    vm:
+    baremetal:
+    mini:
+    support:
+
+all:
+  children:
+    home:
