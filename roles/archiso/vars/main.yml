@@ -1,4 +1,4 @@
 ---
-archiso_working_dir=/tmp/archiso-tmp
-archiso_profile_dir=/data/archiso_profile
-
+archiso_working_dir: /tmp/archiso_tmp
+archiso_profile_dir: /tmp/archiso_profile
+archiso_output_dir:  ./

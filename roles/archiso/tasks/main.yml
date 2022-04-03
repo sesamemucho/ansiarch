@@ -1,0 +1,41 @@
+---
+- name: Copy releng archiso profile to work directory
+  ansible.builtin.copy:
+    src: /usr/share/archiso/configs/releng/
+    dest: "{{ archiso_profile_dir }}"
+
+- name: Ensure mkarchiso working directory is not there
+  ansible.builtin.file:
+    path: "{{ archiso_working_dir }}"
+    state: absent
+
+- name: Add wired base network
+  ansible.builtin.template:
+    src: 10-wired.network.j2
+    dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/network/10-wired.network"
+
+- name: Add wireless base network
+  ansible.builtin.template:
+    src: 10-wireless.network.j2
+    dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/network/10-wireless.network"
+
+- name: Ensure wpa_supplicant directory exists
+  ansible.builtin.file:
+    path: "{{ archiso_profile_dir }}/airootfs/etc/wpa_supplicant"
+    state: directory
+    mode: '0755'
+
+- name: Create wpa_supplicant config
+  ansible.builtin.shell:
+    cmd: "wpa_passphrase {{ wireless_ssid }} {{ wireless_key }} > {{ archiso_profile_dir }}/airootfs/etc/wpa_supplicant/wpa_supplicant-wlan0.conf"
+
+- name: Create a symbolic link for wpa for wlan0
+  ansible.builtin.file:
+    src: /usr/lib/systemd/system/wpa_supplicant@.service
+    dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/system/multi-user.target.wants/wpa_supplicant@wlan0.service"
+    force: yes
+    state: link
+
+- name: Make the Arch ISO
+  ansible.builtin.shell:
+    cmd: mkarchiso -v -w "{{ archiso_working_dir }}" -o "{{ archiso_output_dir }}" "{{ archiso_profile_dir }}"

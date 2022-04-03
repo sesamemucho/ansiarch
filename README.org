@@ -10,3 +10,28 @@ can then install ArchLinux, customized per hostname.
 The above repos were originally forked from
 [[jsf9k/ansible-arch-install][https://github.com/jsf9k/ansible-arch-install]] and 
 [[jsf9k/ansible-home][https://github.com/jsf9k/ansible-home]].
+
+
+** Wireless
+https://wiki.somlabs.com/index.php/Connecting_to_WiFi_network_using_systemd_and_wpa-supplicant
+
+https://michlstechblog.info/blog/debian-configure-wireless-lan-by-systemd/
+
+https://bbs.archlinux.org/viewtopic.php?id=178625
+
+** Bridge to host
+At some point, we will want to talk to the internet from the archiso
+QEMU VM. Probably a couple of scripts, to keep things simple.
+
+See:
+[[https://www.golinuxcloud.com/configure-network-bridge-nmcli-static-dhcp/][How to create and configure network bridge using nmcli (static & dhcp)]]
+[[https://computingforgeeks.com/how-to-create-and-use-network-bridge-on-arch-linux-and-manjaro/][Create and Use Network Bridge on Arch Linux|Manjaro]]
+[[https://bbs.archlinux.org/viewtopic.php?id=227306][[SOLVED] HOWTO setup bridge network with qemu/kvm]]
+
+** Do
+
+*** Make archiso img:
+#+begin_src sh
+ansible-playbook -v -i inventory.yml archiso-img.yml
+#+end_src
+
