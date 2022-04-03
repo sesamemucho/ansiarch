@@ -4,4 +4,4 @@ run:
 	run_archiso -i $(latest_archiso)
 
 archiso:
-	 ansible-playbook -v -i inventory.yml archiso-img.yml
+	 ansible-playbook -v -i inventory.yml archiso-img.yml |& tee archiso.log

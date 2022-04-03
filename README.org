@@ -13,11 +13,7 @@ The above repos were originally forked from
 
 
 ** Wireless
-https://wiki.somlabs.com/index.php/Connecting_to_WiFi_network_using_systemd_and_wpa-supplicant
-
-https://michlstechblog.info/blog/debian-configure-wireless-lan-by-systemd/
-
-https://bbs.archlinux.org/viewtopic.php?id=178625
+https://wiki.archlinux.org/title/Archiso#Automatically_connect_to_a_Wi-Fi_network_using_iwd
 
 ** Bridge to host
 At some point, we will want to talk to the internet from the archiso
@@ -32,6 +28,6 @@ See:
 
 *** Make archiso img:
 #+begin_src sh
-ansible-playbook -v -i inventory.yml archiso-img.yml
+make archiso
 #+end_src
 

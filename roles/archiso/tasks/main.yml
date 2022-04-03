@@ -1,40 +1,45 @@
 ---
-- name: Copy releng archiso profile to work directory
-  ansible.builtin.copy:
-    src: /usr/share/archiso/configs/releng/
-    dest: "{{ archiso_profile_dir }}"
+- name: Ensure mkarchiso profile directory is not there
+  ansible.builtin.file:
+    path: "{{ archiso_profile_dir }}"
+    state: absent
 
 - name: Ensure mkarchiso working directory is not there
   ansible.builtin.file:
     path: "{{ archiso_working_dir }}"
     state: absent
 
-- name: Add wired base network
-  ansible.builtin.template:
-    src: 10-wired.network.j2
-    dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/network/10-wired.network"
+- name: Copy releng archiso profile to work directory
+  ansible.builtin.copy:
+    src: /usr/share/archiso/configs/releng/
+    dest: "{{ archiso_profile_dir }}"
 
-- name: Add wireless base network
-  ansible.builtin.template:
-    src: 10-wireless.network.j2
-    dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/network/10-wireless.network"
+# - name: Add wired base network
+#   ansible.builtin.template:
+#     src: 10-wired.network.j2
+#     dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/network/10-wired.network"
 
-- name: Ensure wpa_supplicant directory exists
+# - name: Add wireless base network
+#   ansible.builtin.template:
+#     src: 10-wireless.network.j2
+#     dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/network/10-wireless.network"
+
+- name: Ensure iwd directory exists
   ansible.builtin.file:
-    path: "{{ archiso_profile_dir }}/airootfs/etc/wpa_supplicant"
+    path: "{{ archiso_profile_dir }}/airootfs/var/lib/iwd"
     state: directory
-    mode: '0755'
 
-- name: Create wpa_supplicant config
-  ansible.builtin.shell:
-    cmd: "wpa_passphrase {{ wireless_ssid }} {{ wireless_key }} > {{ archiso_profile_dir }}/airootfs/etc/wpa_supplicant/wpa_supplicant-wlan0.conf"
+- name: Add iwd file
+  ansible.builtin.template:
+    src: iwd.j2
+    dest: "{{ archiso_profile_dir }}/airootfs/var/lib/iwd/{{ wireless_ssid }}.psk"
 
-- name: Create a symbolic link for wpa for wlan0
-  ansible.builtin.file:
-    src: /usr/lib/systemd/system/wpa_supplicant@.service
-    dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/system/multi-user.target.wants/wpa_supplicant@wlan0.service"
-    force: yes
-    state: link
+# From: https://wiki.archlinux.org/title/Archiso#Automatically_connect_to_a_Wi-Fi_network_using_iwd
+- name: Set up correct permissions for iwd psk file
+  ansible.builtin.lineinfile:
+    path: "{{ archiso_profile_dir }}/profiledef.sh"
+    insertafter: '^file_permissions='
+    line: '["/var/lib/iwd"]="0:0:0700"'
 
 - name: Make the Arch ISO
   ansible.builtin.shell:

@@ -3,3 +3,4 @@
 /host_vars/testing-efi.yml
 ssmm_archive/
 *.iso
+*.log
