@@ -3,6 +3,12 @@
   connection: local
   become: yes
 
+  pre_tasks:
+    - name: Create ssh key
+      ansible.builtin.command:
+        cmd: /usr/bin/ssh-keygen -f "files/{{ ssh_key_file }}" -N ""
+        creates: "files/{{ ssh_key_file }}*"
+      
   roles:
     - archiso
 

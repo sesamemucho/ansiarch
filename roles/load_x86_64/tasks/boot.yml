@@ -1,0 +1,59 @@
+---
+- name: Setup BIOS boot
+  block:
+    - name: Setup grub boot
+      lineinfile:
+        path: /mnt/etc/default/grub
+        regexp: ^#GRUB_ENABLE_CRYPTODISK=
+        line: GRUB_ENABLE_CRYPTODISK=y
+      notify:
+        - Reinstall grub
+        - Update grub configuration
+
+    - name: Setup grub boot cmdline
+      lineinfile:
+        path: /mnt/etc/default/grub
+        regexp: ^GRUB_CMDLINE_LINUX_DEFAULT=
+        line: GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet rd.luks.name={{ root_luks_uuid.stdout }}=cryptdev"
+      notify:
+        - Reinstall grub
+        - Update grub configuration
+
+  when: boottype == "bios"
+  tags:
+    - install_bootloader
+
+- name: Set up systemd-boot
+  block:
+
+    - name: Create directory for EFI configuration files
+      file:
+        path: /mnt/boot/loader/entries
+        state: directory
+
+    - name: Add commandline information to EFI config
+      ansible.builtin.template:
+        src: files/arch-luks.conf.j2
+        dest: /mnt/boot/loader/entries/arch.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Add loader config
+      ansible.builtin.template:
+        src: files/loader.conf.j2
+        dest: /mnt/boot/loader/loader.conf
+        owner: root
+        group: root
+        mode: 0644
+  when: boottype == "efi"
+  tags:
+    - bootctl_cfg
+
+- name: Initialize systemd-boot
+  block:
+    - name: Update systemd-boot
+      command: arch-chroot /mnt bootctl --path=/boot install
+  when: boottype == "efi"
+  tags:
+    - bootctl

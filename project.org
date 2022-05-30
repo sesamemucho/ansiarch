@@ -1,0 +1,84 @@
+* Project
+
+* Todo
+
+Start with name
+
+Find active IP address
+use ansible.netcommon.net_ping
+All we need to do is to get and then use the address - no need for conditionals
+
+x86 or RPi - identify from host vars
+
+wired: 155.42
+wireless: 155.43
+
+Run first stage load
+
+wait for reboot, then look for the host's address (wired or wireless)
+
+Run second stage load
+
+* Design thoughts
+
+** Keep the install command simple
+What I'd like to be able to do is to boot up a machine with a
+customized archiso, and then run something like "do install
+<hostname>", and then have ansible configure the machine according to
+<hostname>.
+
+For this to happen, we would need to identify the archiso machine
+somehow. I will allow the constraint of only one archiso machine on
+the network at a time. The first idea that occurs is to give the
+archiso machine a special IP address. I'm doing this currently by
+using systemd.networkd (in /etc/systemd/network/) to give these
+special addresses (one for wireless, another for wired (not sure why
+two address atm)). However, I would also like this to work with an
+archiso image running on QEMU. There is a 'run_archiso' script from
+Arch Linux that runs archiso on QEMU. It doesn't provide for
+customizing the networking, and I'd like to avoid maintaining special
+versions of provided scripts. Also, the systemd.networking step
+(assigning a special address) interferes with the QEMU way, which
+relies on DHCP.
+
+So, next try:
+
+Have a DHCP server return the magic IP address for hostname
+"archiso". This should work for QEMU (as it won't get out to the
+network's DHCP server), and for the other uses.
+
+Use a host_var name of 'qemu', and set the ssh address to 127.0.0.1,
+port 60022 for the QEMU VM.
+Use ssh address of host_var name for other machines.
+
+It will require that the first install be the DHCP server, though. For
+me, the DHCP server will be a Raspberry Pi, and can be initialized
+with the correct address.
+
+What about other VMs?
+
+a. This process should work for general VMs, with an extra step for
+creating/installing the image to a VM.
+
+b. Most of my VMs will probably be something other than Arch Linux,
+for work practice.
+
+c. Most of the work will be in containers rather than VMs.
+
+
+
+
+
+* Notes:
+
+** Dependencies
+Per Jeff Geerling, using a local ansible.cfg and storing the project
+dependencies locally.
+
+Currently, dependencies are:
+  ansible.netcommon - for ping capability, to see what address is
+  online
+  ansible.utils - dependency of ansible.netcommon
+
+To download dependencies, use
+  make gen

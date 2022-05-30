@@ -1,0 +1,4 @@
+---
+pacstrap_extras:
+  bios: 'gptfdisk syslinux'
+  efi:  'efibootmgr'

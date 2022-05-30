@@ -4,3 +4,7 @@
 ssmm_archive/
 *.iso
 *.log
+/files/ansible_archlinux
+/files/ansible_archlinux.pub
+/ansible_collections
+

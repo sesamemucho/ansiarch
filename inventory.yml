@@ -1,8 +1,8 @@
 ---
 vm:
   hosts:
-    testing-bios:
-    testing-efi:
+    ansiarch-vm-bios:
+    ansiarch-vm-efi:
 
 rpi:
   hosts:

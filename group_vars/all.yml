@@ -1,11 +1,7 @@
 ---
-# Get rid of interpreter discovery warning
-ansible_python_interpreter: /usr/bin/python
-
-ansible_ssh_common_args: -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null"
-
 base_wired_addr: "155.42"
 base_wireless_addr: "155.43"
+ansible_ssh_common_args: '-o IdentitiesOnly=yes'
 
 install_drive: /dev/sda
 use_wireless: no
@@ -14,6 +10,9 @@ boot_partition_suffix: '1'
 root_partition_suffix: '2'
 root_filesystem: 'btrfs'
 luks_keyfile: home_keyfile
+ansible_ssh_user: root
+ansible_ssh_private_key_file: files/ansible_archlinux
+
 partition_number:
   bios:
     boot_suffix: '2'

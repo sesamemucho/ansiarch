@@ -1,0 +1,10 @@
+---
+ - name: Reinstall grub
+   ansible.builtin.command: arch-chroot /mnt /usr/bin/grub-install --target i386-pc --recheck "{{ install_drive }}"
+   tags:
+     - install_bootloader
+
+ - name: Update grub configuration
+   ansible.builtin.command: arch-chroot /mnt /usr/bin/grub-mkconfig -o /boot/grub/grub.cfg
+   tags:
+     - install_bootloader
