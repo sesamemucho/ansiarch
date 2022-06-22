@@ -8,6 +8,7 @@ here=$(readlink -f $(dirname $0))
 . $here/parse-args.sh
 
 vm_iso=${1:?Need location of iso file for arch installation}
+there_vm=$(readlink -f /var/tmp/$(basename $vm_iso))
 
 macaddr="52:54:00:c0:ff:ee"
 
@@ -33,40 +34,62 @@ ip_addr=$(ansible -i inventory.yml -m debug $vm_name -a "var=hostvars[inventory_
 # Make sure the old VM is gone
 if virsh $connect list --state-running --name | grep $vm_name >&/dev/null;
 then
-    virsh $connect destroy $destroyflag $vm_name
+    virsh $connect destroy $vm_name
 fi
 
 if virsh $connect list --all --name | grep $vm_name >&/dev/null;
 then
-    virsh $connect undefine $vm_name
+    virsh $connect undefine $destroyflag $vm_name
 fi
 
 if ! virsh $connect net-dumpxml default | grep "$macaddr" >& /dev/null;
 then
-    # Make sure libvirt will assign the desired address to our VM
+    # make sure libvirt will assign the desired address to our vm
     virsh $connect net-update default add ip-dhcp-host "<host mac='$macaddr'  ip='$ip_addr'/>" --live >& /dev/null
 fi
+
+cp -v $vm_iso $there_vm
+
+# virt-install $connect                         \
+#              --name "$vm_name"                \
+#              --memory $vm_memsize             \
+#              --vcpus=2,maxvcpus=4             \
+#              --cpu host                       \
+#              --boot uefi,bootmenu.enable=on,bios.useserial=on \
+#              --graphics none \
+#              --serial pty \
+#              --cdrom "$there_vm"              \
+#              --disk size=${vm_disksize},format=qcow2 \
+#              --virt-type kvm                  \
+#              --network default,mac="52:54:00:c0:ff:ee" \
+#              --console pty,target.type=virtio \
+#              $boottype                        \
+#              --autoconsole text
+
+# #             --extra-args 'console=ttyS0,115200n8 --- console=ttyS0,115200n8' \
+
+# #             --noautoconsole
 
 virt-install $connect                         \
              --name "$vm_name"                \
              --memory $vm_memsize             \
              --vcpus=2,maxvcpus=4             \
              --cpu host                       \
-             --cdrom "$vm_iso"                \
-             --network default,mac="52:54:00:c0:ff:ee" \
+             --cdrom "$there_vm"              \
              --disk size=${vm_disksize},format=qcow2 \
              --virt-type kvm                  \
+             --network default,mac="52:54:00:c0:ff:ee" \
              --console pty,target.type=virtio \
              $boottype                        \
              --noautoconsole
 
-# Using the '--wait' flag for virt-install never returns
+# # Using the '--wait' flag for virt-install never returns
 
-echo
-echo "Connecting to VM"
-echo "Use the \"Escape character\" (below) to exit the VM console."
-echo "Login as \"root\". No password required."
-echo
+# echo
+# echo "Connecting to VM"
+# echo "Use the \"Escape character\" (below) to exit the VM console."
+# echo "Login as \"root\". No password required."
+# echo
 
-exec virsh $connect console "$vm_name"
+# exec virsh $connect console "$vm_name"
 

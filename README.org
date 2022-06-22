@@ -26,6 +26,9 @@ See:
 
 ** Do
 
+User needs to be in the following groups:
+kvm libvirt libvirt-qemu
+
 *** Make archiso img:
 #+begin_src sh
 make archiso

@@ -31,7 +31,7 @@
 
 - name: Copy ssh key file to root
   ansible.builtin.copy:
-    src: "{{ ssh_key_file }}.pub"
+    src: "{{ ansible_ssh_private_key_file }}.pub"
     dest: "{{ archiso_profile_dir }}/airootfs/root/.ssh/authorized_keys"
 
 # From: https://wiki.archlinux.org/title/Archiso#Automatically_connect_to_a_Wi-Fi_network_using_iwd
@@ -67,6 +67,18 @@
   ansible.builtin.file:
     src: /usr/lib/systemd/system/sshd.service
     dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/system/multi-user.target.wants/sshd.service"
+    force: yes
+    state: link
+
+- name: Ensure systemd-resolved service file is not there
+  ansible.builtin.file:
+    path: "{{ archiso_profile_dir }}/airootfs/etc/systemd/system/multi-user.target.wants/systemd-resolved.service"
+    state: absent
+
+- name: Create a symbolic link for systemd-resolved.service
+  ansible.builtin.file:
+    src: /usr/lib/systemd/system/systemd-resolved.service
+    dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/system/multi-user.target.wants/systemd-resolved.service"
     force: yes
     state: link
 

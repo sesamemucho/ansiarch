@@ -1,8 +1,5 @@
 #
 #
-here=$(dirname $0)
-. $here/parse-args.sh
+here=$(readlink -f $(dirname $0))
 
-vm_iso=${1:?Need location of iso file for arch installation}
-
-$here/start-vm.sh -m $vm_memsize -s $vm_disksize "testing-efi" "$vm_iso"
+$here/start-vm.sh --efi "$@"

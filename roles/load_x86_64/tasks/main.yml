@@ -6,6 +6,12 @@
   tags:
     - quick_exit
 
+- name: Set up pacman
+  command: pacman-key --init
+
+- name: Set up archlinux keys
+  command: pacman-key --populate archlinux
+
 - name: Synchronize clock via NTP
   command: timedatectl set-ntp true
   tags:
@@ -49,7 +55,7 @@
   block:
     - name: Copy keyfile
       copy:
-        src: '{{ luks_keyfile }}'
+        src: 'luks_keyfile'
         dest: /root/keyfile
   tags:
     - luks1

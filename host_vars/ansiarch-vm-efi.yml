@@ -3,4 +3,4 @@ ansible_host: 192.168.122.250
 install_drive: /dev/vda
 boot_partition_suffix: '2'
 root_partition_suffix: '3'
-boottype: bios
+boottype: efi
