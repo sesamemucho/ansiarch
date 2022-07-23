@@ -15,6 +15,9 @@ run:
 archiso:
 	 ansible-playbook -f 2 -v -i inventory.yml archiso-img.yml |& tee archiso.log
 
+rpi-base:
+	ansible-playbook -i inventory.yml rpi-img.yml
+
 do:
 	ansible-playbook -i inventory.yml -l $(HOST) load.yml
 

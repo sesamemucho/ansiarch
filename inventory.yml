@@ -6,6 +6,7 @@ vm:
 
 rpi:
   hosts:
+    rpi-base:
     uriel:
 
 baremetal:

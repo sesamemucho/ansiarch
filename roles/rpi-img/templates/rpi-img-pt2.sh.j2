@@ -1,0 +1,8 @@
+# Allow root ssh login for ansible work
+echo "PermitRootLogin yes" >>"{{ rpi_mount_point }}/etc/ssh/sshd_config"
+
+sync
+umount {{ rpi_mount_point }}/boot
+umount {{ rpi_mount_point }}
+
+losetup -D

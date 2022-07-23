@@ -6,4 +6,13 @@
     - name: Include the x86_64 roles
       include_role:
         name: load_x86_64
-      when: "ansible_architecture == 'x86_64'"
+      when: "aa_mach_type == 'x86_64'"
+
+    # There isn't as much to do for Raspberry Pi machines until we
+    # start dealing with attached drives and other peripherals.
+    # Currently, setting IP address, users.
+
+    - name: Include the raspberry pi roles
+      include_role:
+        name: load_rpi
+      when: "aa_mach_type == 'rpi'"
