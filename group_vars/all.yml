@@ -1,7 +1,7 @@
 ---
 base_wired_addr: "155.42"
 base_wireless_addr: "155.43"
-ansible_ssh_common_args: '-o IdentitiesOnly=yes'
+ansible_ssh_common_args: '-o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null'
 
 install_drive: /dev/sda
 use_wireless: no

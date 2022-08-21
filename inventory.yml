@@ -26,6 +26,7 @@ home:
     baremetal:
     mini:
     support:
+    rpi:
 
 all:
   children:

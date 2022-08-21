@@ -4,7 +4,7 @@ ansible_python_interpreter: /usr/bin/python
 
 ansible_become_method: su
 ansible_connection: ssh
-ansible_ssh_user: alarm
-ansible_ssh_pass: alarm
+ansible_ssh_user: root
+ansible_ssh_pass: root
 
 aa_mach_type: rpi

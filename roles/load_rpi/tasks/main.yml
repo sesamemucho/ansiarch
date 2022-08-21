@@ -1,7 +1,4 @@
 ---
-vars:
-  ansible_host: '{{ ip_start }}.{{ base_wired_addr }}'
-
 - name: Add group
   ansible.builtin.group:
     name: "{{ user_name }}"

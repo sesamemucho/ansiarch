@@ -2,6 +2,15 @@
 
 * Todo
 
+Get load step to work with RPi
+ssh with ansible key
+override ansible host IP address with ...155.42
+pacman update
+Add user
+Set up hard drive if attached
+
+* Flow
+
 Start with name
 
 Find active IP address
@@ -70,6 +79,13 @@ c. Most of the work will be in containers rather than VMs.
 
 
 * Notes:
+
+** Things to know:
+
+*** Ansible SSH key
+The key 'ansible_ssh_private_key_file' (defined in group_vars/all.yml)
+is used for ssh-ing into the hosts, and should exist before a playbook
+is run.
 
 ** Dependencies
 Per Jeff Geerling, using a local ansible.cfg and storing the project
