@@ -98,3 +98,8 @@ Currently, dependencies are:
 
 To download dependencies, use
   make gen
+
+** Files
+
+*** inventory.yml
+The primary inventory file for this project. It defines the 

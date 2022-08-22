@@ -8,14 +8,14 @@ declare -i retval=0
 
 # Not using this yet
 # # Make sure there is a luks keyfile
-# luks_keyfile=$(cat group_vars/all.yml | awk '/^luks_keyfile:/ {print $2}')
+# luks_keyfile=$(scripts/get_ansible_var.sh luks_keyfile)
 # if [[ ! -r $luks_keyfile ]]
 # then
 #   echo "Luks keyfile ($luks_keyfile) not found"
 #   let $(( retval++ ))
 # fi
 
-ssh_key=$(cat group_vars/all.yml | awk '/^ansible_ssh_private_key_file:/ {print $2}')
+ssh_key=$(scripts/get_ansible_var.sh ansible_ssh_private_key_file)
 if [[ ! -r $ssh_key ]]
 then
   echo "SSH keyfile ($ssh_key) not found"
