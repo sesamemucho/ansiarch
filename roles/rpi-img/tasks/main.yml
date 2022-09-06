@@ -60,10 +60,19 @@
     src: wireless.j2
     dest: "{{ rpi_mount_point }}/etc/netctl/wireless"
 
+# Removed "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service".
+# Removed "/etc/systemd/system/sockets.target.wants/systemd-networkd.socket".
+# Removed "/etc/systemd/system/dbus-org.freedesktop.network1.service".
+
 - name: Disable systemd-networkd service (now using netctl)
   ansible.builtin.file:
-    path: "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/systemd-networkd.service"
+    path: "{{ item }}"
     state: absent
+  loop:
+    - "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/systemd-networkd.service"
+    - "{{ rpi_mount_point }}/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+    - "{{ rpi_mount_point }}/etc/systemd/system/sockets.target.wants/systemd-networkd.socket"
+    - "{{ rpi_mount_point }}/etc/systemd/system/dbus-org.freedesktop.network1.service"
 
 - name: Finish new RPI image file
   ansible.builtin.shell:

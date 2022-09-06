@@ -20,6 +20,6 @@ $ssh_cmd pacman-key --populate archlinuxarm
 
 $ssh_cmd pacman --noconfirm -Syu
 
-$ssh_cmd pacman --noconfirm -S python
+$ssh_cmd pacman --noconfirm -S python parted
 
 $ssh_cmd reboot

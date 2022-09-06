@@ -1,17 +1,22 @@
 ---
-- hosts: all
+- hosts: '{{ aa_host }}'
   become: yes
 
   vars:
+    - my_host: '{{ aa_host }}'
     - ansible_ssh_host: '{{ ip_start }}.{{ base_wired_addr }}'
 
   tasks:
-    - name: Include the x86_64 roles
-      include_role:
-        name: load_x86_64
-      when: "aa_mach_type == 'x86_64'"
+    - name: foo
+      ansible.builtin.debug:
+        var: ansible_ssh_host
 
-    - name: Include the raspberry pi roles
-      include_role:
-        name: load_rpi
-      when: "aa_mach_type == 'rpi'"
+    # - name: Include the x86_64 roles
+    #   include_role:
+    #     name: load_x86_64
+    #   when: "aa_mach_type == 'x86_64'"
+
+    # - name: Include the raspberry pi roles
+    #   include_role:
+    #     name: load_rpi
+    #   when: "aa_mach_type == 'rpi'"

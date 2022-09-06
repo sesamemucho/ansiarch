@@ -8,3 +8,5 @@ ansible_ssh_user: root
 ansible_ssh_pass: root
 
 aa_mach_type: rpi
+
+data_drive: /dev/sda

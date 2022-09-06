@@ -1,5 +1,6 @@
 DEBUG_FLAG ?=
 KEYFILE := ./files/ansible_archlinux
+HOST ?= unset
 hosts := $(patsubst host_vars/%.yml,%,$(wildcard host_vars/*.yml))
 
 latest_archiso := $(shell ls archlinux-*.iso | sort | tail -1)
@@ -16,13 +17,25 @@ archiso:
 rpi-base:
 	ansible-playbook $(DEBUG_FLAG) -i inventory.yml rpi-img.yml
 
+rpi-test:
+	ansible-playbook $(DEBUG_FLAG) -i inventory.yml rpi-test.yml
+
+load:
+	@ if [[ $(HOST) == 'unset' ]]; \
+	  then \
+	    echo "HOST must be set on the command line:"; \
+	    echo "make HOST=myhost load"; \
+	    exit; \
+	  fi; \
+	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="aa_host=$(HOST)" load.yml
+
 # Template to create rules for each VM host named in host_vars/
 #
 #
 define make_host
 .PHONY: $(1)
 $(1):
-	ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(1) load.yml
+	ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(1) configure.yml
 endef
 
 $(foreach host,$(hosts),$(eval $(call make_host,$(host))))

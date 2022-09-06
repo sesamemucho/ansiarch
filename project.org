@@ -99,6 +99,14 @@ Currently, dependencies are:
 To download dependencies, use
   make gen
 
+** Raspberry Pi
+
+There is a script (roles/load_rpi/files/setup.sh) to prepare the
+system to be controlled by ansible. This is configured to run once, at
+the first boot. This will take several minutes to run. To watch its
+progress, log into the rpi as root, and run the command 
+  'journalctl -f -t setup.sh'
+
 ** Files
 
 *** inventory.yml

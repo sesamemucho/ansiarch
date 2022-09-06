@@ -1,0 +1,12 @@
+[Unit]
+Description=Run script at startup after network becomes reachable
+After=default.target
+ConditionPathExists=!/etc/pacman.d/gnupg
+
+[Service]
+Type=simple
+ExecStart=/root/setup.sh
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target
