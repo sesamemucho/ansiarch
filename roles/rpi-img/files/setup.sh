@@ -14,7 +14,7 @@ pacman-key --init
 pacman-key --populate archlinuxarm
 
 pacman --noconfirm -Sy
-pacman --noconfirm -S python parted gpg-agent
+pacman --noconfirm -S python parted gnupg
 pacman --noconfirm -Su
 
 reboot

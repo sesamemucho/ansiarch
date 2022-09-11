@@ -1,5 +1,6 @@
 ---
-- hosts: '{{ aa_host }}'
+- hosts: 'wired-base'
+#- hosts: '{{ aa_host }}'
   become: yes
 
   vars:
@@ -9,14 +10,14 @@
   tasks:
     - name: foo
       ansible.builtin.debug:
-        var: ansible_ssh_host
+        var: ansible_architecture
 
-    # - name: Include the x86_64 roles
-    #   include_role:
-    #     name: load_x86_64
-    #   when: "aa_mach_type == 'x86_64'"
+    - name: Include the x86_64 roles
+      include_role:
+        name: load_x86_64
+      when: "ansible_architecture == 'x86_64'"
 
-    # - name: Include the raspberry pi roles
-    #   include_role:
-    #     name: load_rpi
-    #   when: "aa_mach_type == 'rpi'"
+    - name: Include the raspberry pi roles
+      include_role:
+        name: load_rpi
+      when: "ansible_architecture == 'armv7l'"
