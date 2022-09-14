@@ -1,5 +1,5 @@
 ---
-ansible_host: 10.135.155.163
+ipa: "155.163"
 boot_partition_suffix: '2'
 root_partition_suffix: '3'
 boottype: bios

@@ -1,4 +1,4 @@
 ---
-ansible_host: 10.135.155.123
+ipa: "155.123"
 boottype: bios
 wired_interface: eno1

@@ -21,13 +21,17 @@ rpi-test:
 	ansible-playbook $(DEBUG_FLAG) -i inventory.yml rpi-test.yml
 
 load:
-	@ if [[ $(HOST) == 'unset' ]]; \
+	@ set -e; \
+	  if [[ $(HOST) == 'unset' ]]; \
 	  then \
 	    echo "HOST must be set on the command line:"; \
 	    echo "make HOST=myhost load"; \
 	    exit; \
 	  fi; \
-	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="aa_host=$(HOST)" load.yml
+	  : Are we using wired_base or wireless_base?; \
+	  base_host=$$(scripts/get_base_host.sh); \
+	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=$$base_host aa_host=$(HOST)" load.yml; \
+	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) configure.yml
 
 # Template to create rules for each VM host named in host_vars/
 #

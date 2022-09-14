@@ -1,4 +1,4 @@
 ---
-ansible_host: 10.135.155.126
+ipa: "155.126"
 boottype: bios
 

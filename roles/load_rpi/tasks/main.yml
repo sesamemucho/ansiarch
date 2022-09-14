@@ -1,35 +1,35 @@
 ---
-- name: Upgrade packages
-  community.general.pacman:
-    upgrade: yes
-    update_cache: yes
+# - name: Upgrade packages
+#   community.general.pacman:
+#     upgrade: yes
+#     update_cache: yes
 
-- name: install and update basic packages
-  community.general.pacman:
-    name:
-      - btrfs-progs
-    update_cache: yes
+# - name: install and update basic packages
+#   community.general.pacman:
+#     name:
+#       - btrfs-progs
+#     update_cache: yes
 
-- name: Wipe install drive and all its partitions
-  ansible.builtin.command: wipefs --force --all  "{{ data_drive }}"
+# - name: Wipe install drive and all its partitions
+#   ansible.builtin.command: wipefs --force --all  "{{ data_drive }}"
 
-- name: Create a new ext4 primary partition
-  community.general.parted:
-    device: /dev/sda
-    label: gpt
-    name: data
-    number: 1
-    part_type: primary
-    state: present
-    fs_type: btrfs
+# - name: Create a new ext4 primary partition
+#   community.general.parted:
+#     device: /dev/sda
+#     label: gpt
+#     name: data
+#     number: 1
+#     part_type: primary
+#     state: present
+#     fs_type: btrfs
 
-- name: Reboot for new partition
-  ansible.builtin.reboot:
+# - name: Reboot for new partition
+#   ansible.builtin.reboot:
 
-- name: Create filesystem
-  community.general.filesystem:
-    fstype: btrfs
-    dev: "{{ data_drive }}1"
+# - name: Create filesystem
+#   community.general.filesystem:
+#     fstype: btrfs
+#     dev: "{{ data_drive }}1"
 
 - name: Install basic packages
   community.general.pacman:

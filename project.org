@@ -99,6 +99,13 @@ Currently, dependencies are:
 To download dependencies, use
   make gen
 
+host dependencies:
+make
+jq
+python
+ansible
+mktemp
+
 ** Raspberry Pi
 
 There is a script (roles/load_rpi/files/setup.sh) to prepare the

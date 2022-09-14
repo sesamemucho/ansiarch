@@ -1,23 +1,25 @@
 ---
-- hosts: 'wired-base'
-#- hosts: '{{ aa_host }}'
+- hosts: '{{ base_host }}'
   become: yes
 
   vars:
     - my_host: '{{ aa_host }}'
-    - ansible_ssh_host: '{{ ip_start }}.{{ base_wired_addr }}'
 
   tasks:
-    - name: foo
+    - name: foo1
       ansible.builtin.debug:
-        var: ansible_architecture
+        var: inventory_hostname
 
-    - name: Include the x86_64 roles
-      include_role:
-        name: load_x86_64
-      when: "ansible_architecture == 'x86_64'"
+    - name: foo2
+      ansible.builtin.debug:
+        var: hostvars[my_host]
 
-    - name: Include the raspberry pi roles
-      include_role:
-        name: load_rpi
-      when: "ansible_architecture == 'armv7l'"
+    # - name: Include the x86_64 roles
+    #   include_role:
+    #     name: load_x86_64
+    #   when: "ansible_architecture == 'x86_64'"
+
+    # - name: Include the raspberry pi roles
+    #   include_role:
+    #     name: load_rpi
+    #   when: "ansible_architecture == 'armv7l'"
