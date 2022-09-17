@@ -1,4 +1,10 @@
 ---
-ipa: "155.126"
+ipa:
+  enp3s0:
+    type: wired
+    ip: "155.102"
+  wlp2s0:
+    type: wireless
+    ip: "155.162"
 boottype: bios
 

@@ -1,4 +1,10 @@
 ---
-ipa: "155.123"
-boottype: bios
-wired_interface: eno1
+ipa:
+  eth0:
+    type: wired
+    ip: "155.104"
+  wlan0:
+    type: wireless
+    ip: "155.164"
+
+wired_interface: eth0

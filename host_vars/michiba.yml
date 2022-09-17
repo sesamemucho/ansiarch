@@ -1,3 +1,10 @@
 ---
-ipa: 155.114
+ipa:
+  enp3s0:
+    type: wired
+    ip: "155.105"
+  wlp2s0:
+    type: wireless
+    ip: "155.165"
+
 boottype: efi

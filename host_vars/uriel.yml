@@ -1,2 +1,8 @@
 ---
-ipa: "155.160"
+ipa:
+  eth0:
+    type: wired
+    ip: "155.100"
+  wlan0:
+    type: wireless
+    ip: "155.160"
