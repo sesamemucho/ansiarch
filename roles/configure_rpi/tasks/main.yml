@@ -1,0 +1,166 @@
+---
+# - name: Upgrade packages
+#   community.general.pacman:
+#     upgrade: yes
+#     update_cache: yes
+
+# - name: install and update basic packages
+#   community.general.pacman:
+#     name:
+#       - btrfs-progs
+#     update_cache: yes
+
+# - name: Wipe install drive and all its partitions
+#   ansible.builtin.command: wipefs --force --all  "{{ data_drive }}"
+
+# - name: Create a new ext4 primary partition
+#   community.general.parted:
+#     device: /dev/sda
+#     label: gpt
+#     name: data
+#     number: 1
+#     part_type: primary
+#     state: present
+#     fs_type: btrfs
+
+# - name: Reboot for new partition
+#   ansible.builtin.reboot:
+
+# - name: Create filesystem
+#   community.general.filesystem:
+#     fstype: btrfs
+#     dev: "{{ data_drive }}1"
+
+- name: Install basic packages
+  community.general.pacman:
+    name:
+      - sudo
+      - base-devel
+    extra_args: --noconfirm --needed
+    update_cache: yes
+
+- name: Set local timezone
+  ansible.builtin.file:
+    src: /usr/share/zoneinfo/America/Los_Angeles
+    path: /etc/localtime
+    state: link
+
+# - name: Generate adjtime file
+#   command: hwclock --systohc
+
+- name: Setup locales
+  block:
+    - name: Configure locale.gen
+      lineinfile:
+        dest: /etc/locale.gen
+        regexp: '{{ item.regex }}'
+        line: '{{ item.line }}'
+      loop:
+        - {regex: en_US\.UTF-8 UTF-8, line: en_US.UTF-8 UTF-8}
+        - {regex: en_US ISO-8859-1, line: en_US ISO-8859-1}
+
+    - name: Create locale.conf
+      copy:
+        content: "LANG=en_US.UTF-8"
+        dest: /etc/locale.conf
+
+    - name: Generate locales
+      command: locale-gen
+
+- name: Setup user account
+  block:
+    - name: Add group
+      ansible.builtin.group:
+        name: "{{ user_group }}"
+        state: present
+
+    - name: Add user
+      ansible.builtin.user:
+        name:  "{{ user_name }}"
+        group: "{{ user_group }}"
+        create_home: yes
+        append: yes
+        groups: wheel
+
+    - name: Set user's password
+      ansible.builtin.shell:
+        cmd: echo '{{ user_name }}:password' | chpasswd
+
+    - name: Expire user's password
+      ansible.builtin.command:
+        passwd -e {{ user_name }}
+
+    - name: Create user's ssh directory
+      ansible.builtin.file:
+        path: /home/{{ user_name }}/.ssh
+        mode: 0700
+        owner: "{{ user_name }}"
+        group: "{{ user_group }}"
+        state: directory
+
+    # - name: Copy over ssh keys from current Ansible controller as an authorized key
+    #   copy:
+    #     src: '{{ lookup("env", "HOME") }}/.ssh/'
+    #     dest: '/mnt/home/{{ user_name }}/.ssh/'
+
+    # - name: Set mode, owner, and group on user's authorized_key file
+    #   command: arch-chroot /mnt {{ item }}
+    #   loop:
+    #     - chmod 0600 /home/{{ user_name }}/.ssh/authorized_keys
+    #     - chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh/authorized_keys
+
+- name: Give passwordless sudo access to wheel group
+  copy:
+    content: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    dest: /etc/sudoers.d/wheel
+    validate: /usr/sbin/visudo --check --file=%s
+
+- name: Start with AUR
+  block:
+    - name: Make ansible custom-module directory
+      ansible.builtin.file:
+        path: '{{ user_home }}/.ansible/plugins/modules'
+        state: directory
+        owner: '{{ user_name }}'
+        group: '{{ user_group }}'
+
+    - name: get aur helper
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/kewlfft/ansible-aur/master/plugins/modules/aur.py
+        dest: '{{ user_home }}/.ansible/plugins/modules/aur.py'
+        mode: '0644'
+
+    - name: Make AUR build user
+      ansible.builtin.user:
+        name: aur_builder
+        create_home: yes
+        group: wheel
+      become_user: root
+
+    - name: Set up remote_tmp dir
+      ansible.builtin.file:
+        path: /home/aur_builder/.ansible/tmp
+        state: directory
+        owner: aur_builder
+        group: wheel
+        mode: 0755
+      become_user: root
+
+    - name: sudo for aur_builder
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/11-install-aur-builder
+        line: 'aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman'
+        create: yes
+        validate: 'visudo -cf %s'
+      become_user: root
+
+    - name: AUR installs
+      block:
+        - name: get yay
+          aur:
+            use: makepkg
+            name: yay
+          become_user: aur_builder
+
+  become: true
+  become_user: '{{ user_name }}'
