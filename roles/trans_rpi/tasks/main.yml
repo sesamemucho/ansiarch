@@ -1,0 +1,35 @@
+---
+- name: Check it out
+  ansible.builtin.debug:
+    msg: "addr: {{ stuff.value['ip'] }}"
+  vars:
+    stuff: "{{ hostvars[my_host]['ipa'] | dict2items | first }}"
+
+- name: Set up /etc/hosts
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: "/etc/hosts"
+  vars:
+    stuff: "{{ hostvars[my_host]['ipa'] | dict2items | first }}"
+
+- name: Set up new IP addresses
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}.j2"
+    dest: "/etc/netctl/{{ item.value['type'] }}"
+  loop: "{{ hostvars[my_host]['ipa'] | dict2items }}"
+
+- name: Restart networks
+  ansible.builtin.command:
+    cmd: "/usr/bin/systemctl restart netctl@{{ item.value['type'] }}.service"
+  loop: "{{ hostvars[my_host]['ipa'] | dict2items }}"
+
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ my_host }}.{{ domain }}"
+    use: systemd
+
+# TODO:
+# Need to remove 'wired' and 'wireless' netctl services and add the ones
+# identified by device name (here, eth0 and wlan0)
+
+# But, wait until the end to actually remove 'wired' and 'wireless'.

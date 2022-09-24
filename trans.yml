@@ -1,0 +1,21 @@
+---
+- hosts: '{{ base_host }}'
+  become: yes
+
+  vars:
+    - my_host: '{{ aa_host }}'
+
+  tasks:
+    - name: foo
+      ansible.builtin.debug:
+        var: ansible_host
+
+    # - name: Include the x86_64 roles
+    #   include_role:
+    #     name: load_x86_64
+    #   when: "ansible_architecture == 'x86_64'"
+
+    - name: Include the raspberry pi transition role
+      include_role:
+        name: trans_rpi
+      when: "ansible_architecture == 'armv7l'"
