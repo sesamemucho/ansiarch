@@ -9,6 +9,9 @@ pacman update
 Add user
 Set up hard drive if attached
 
+* Image files
+http://ca.us.mirror.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
+
 * Flow
 
 Start with name

@@ -1,0 +1,7 @@
+[Unit]
+Description="{{ item.value['type'] }} {{ item.key }} RPi connection"
+BindsTo="sys-subsystem-net-devices-{{ item.key }}.device"
+After="sys-subsystem-net-devices-{{ item.key }}.device"
+
+[Install]
+WantedBy=default.target

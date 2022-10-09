@@ -1,0 +1,14 @@
+---
+
+my_host: "{{ aa_host }}"
+niclist: "{{ hostvars[my_host]['ipa']|dict2items }}"
+# The primary NIC is the first one that has 'value.primary' set to
+# true. I say 'first', but really there should only be one defined
+# this way.
+primary_nic: "{{ niclist|selectattr('value.primary', 'defined')|selectattr('value.primary')|first  }}"
+# The other nics are those for which either value.primary is not set,
+# or value.primary is set to false.  See:
+# https://www.0xf8.org/2021/03/filtering-with-ansibles-selectattr-rejectattr-when-the-tested-attribute-can-be-absent/
+other_nics: "{{ niclist | rejectattr('value.primary', 'defined') | list |
+                union( niclist | selectattr('value.primary', 'defined') |
+                selectattr('value.primary', 'equalto', false) | list ) }}"

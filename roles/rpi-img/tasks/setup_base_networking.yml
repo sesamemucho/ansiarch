@@ -1,0 +1,25 @@
+---
+- name: Prepare dir for base profile
+  ansible.builtin.file:
+    path: "{{ rpi_mount_point }}/etc/systemd/system/netctl@{{ item }}.service.d"
+    state: directory
+    mode: '0755'
+
+- name: Link multi-user target
+  ansible.builtin.file:
+    src: "/usr/lib/systemd/system/netctl@.service"
+    dest: "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/netctl@{{ item }}.service"
+    force: yes
+    follow: False
+    state: link
+
+- name: Add base netctl profile
+  ansible.builtin.template:
+    src: "{{ item }}-profile.j2"
+    dest: "{{ rpi_mount_point }}/etc/systemd/system/netctl@{{ item }}.service.d/profile.conf"
+
+- name: Copy base netctl profile
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ rpi_mount_point }}/etc/netctl/{{ item }}"
+

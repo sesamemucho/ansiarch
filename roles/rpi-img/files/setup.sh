@@ -9,12 +9,12 @@
 #
 
 set -x
+echo Starting at $(date) >> /root/setup.log
+pacman-key --init &>> /root/setup.log
+pacman-key --populate archlinuxarm &>> /root/setup.log
 
-pacman-key --init
-pacman-key --populate archlinuxarm
-
-pacman --noconfirm -Sy
-pacman --noconfirm -S python parted gnupg
-pacman --noconfirm -Su
+pacman --noconfirm -Sy &>> /root/setup.log
+pacman --noconfirm -S python parted gnupg &>> /root/setup.log
+pacman --noconfirm -Su &>> /root/setup.log
 
 reboot

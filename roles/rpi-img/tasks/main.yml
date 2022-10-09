@@ -16,49 +16,59 @@
     dest: "{{ rpi_mount_point }}/root/.ssh/authorized_keys"
     mode: '0644'
 
-- name: Prepare dir for wired profile
-  ansible.builtin.file:
-    path: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wired.service.d"
-    state: directory
-    mode: '0755'
+- name: Deploy base networking profiles
+  include_tasks: setup_base_networking.yml
+  loop:
+    - wired
+    - wireless
 
-- name: Link multi-user target
-  ansible.builtin.file:
-    src: "{{ rpi_mount_point }}/usr/lib/systemd/system/netctl@.service"
-    dest: "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/netctl@wired.service"
-    state: link
+# - name: Prepare dir for wired profile
+#   ansible.builtin.file:
+#     path: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wired.service.d"
+#     state: directory
+#     mode: '0755'
 
-- name: Add wired netctl profile
-  ansible.builtin.template:
-    src: wired.j2
-    dest: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wired.service.d/profile.conf"
+# - name: Link multi-user target
+#   ansible.builtin.file:
+#     src: "/usr/lib/systemd/system/netctl@.service"
+#     dest: "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/netctl@wired.service"
+#     force: yes
+#     follow: False
+#     state: link
 
-- name: Copy wired netctl profile
-  ansible.builtin.template:
-    src: wired.j2
-    dest: "{{ rpi_mount_point }}/etc/netctl/wired"
+# - name: Add wired netctl profile
+#   ansible.builtin.template:
+#     src: wired-profile.j2
+#     dest: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wired.service.d/profile.conf"
 
-- name: Prepare dir for wireless profile
-  ansible.builtin.file:
-    path: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wireless.service.d"
-    state: directory
-    mode: '0755'
+# - name: Copy wired netctl profile
+#   ansible.builtin.template:
+#     src: wired.j2
+#     dest: "{{ rpi_mount_point }}/etc/netctl/wired"
 
-- name: Link multi-user target
-  ansible.builtin.file:
-    src: "{{ rpi_mount_point }}/usr/lib/systemd/system/netctl@.service"
-    dest: "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/netctl@wireless.service"
-    state: link
+# - name: Prepare dir for wireless profile
+#   ansible.builtin.file:
+#     path: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wireless.service.d"
+#     state: directory
+#     mode: '0755'
 
-- name: Add wireless netctl profile
-  ansible.builtin.template:
-    src: wireless.j2
-    dest: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wireless.service.d/profile.conf"
+# - name: Link multi-user target
+#   ansible.builtin.file:
+#     src: "/usr/lib/systemd/system/netctl@.service"
+#     dest: "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/netctl@wireless.service"
+#     force: yes
+#     follow: False
+#     state: link
 
-- name: Copy wireless netctl profile
-  ansible.builtin.template:
-    src: wireless.j2
-    dest: "{{ rpi_mount_point }}/etc/netctl/wireless"
+# - name: Add wireless netctl profile
+#   ansible.builtin.template:
+#     src: wireless-profile.j2
+#     dest: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wireless.service.d/profile.conf"
+
+# - name: Copy wireless netctl profile
+#   ansible.builtin.template:
+#     src: wireless.j2
+#     dest: "{{ rpi_mount_point }}/etc/netctl/wireless"
 
 # Removed "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service".
 # Removed "/etc/systemd/system/sockets.target.wants/systemd-networkd.socket".
@@ -84,12 +94,20 @@
   ansible.builtin.copy:
     src: run-aa-once-setup.service
     dest: "{{ rpi_mount_point }}/etc/systemd/system/"
-    mode: '0544'
+    mode: '0444'
 
-- name: Link multi-user setup target
+- name: Set default.target
+  ansible.builtin.file:
+    path: "{{ rpi_mount_point }}/etc/systemd/system/default.target.wants"
+    state: directory
+    mode: '0755'
+
+- name: Link default setup target
   ansible.builtin.file:
     src: "/etc/systemd/system/run-aa-once-setup.service"
-    dest: "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/run-aa-once-setup.service"
+    dest: "{{ rpi_mount_point }}/etc/systemd/system/default.target.wants/run-aa-once-setup.service"
+    force: yes
+    follow: False
     state: link
 
 - name: Finish new RPI image file

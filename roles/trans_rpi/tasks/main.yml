@@ -1,35 +1,55 @@
 ---
-- name: Check it out
-  ansible.builtin.debug:
-    msg: "addr: {{ stuff.value['ip'] }}"
-  vars:
-    stuff: "{{ hostvars[my_host]['ipa'] | dict2items | first }}"
-
 - name: Set up /etc/hosts
   ansible.builtin.template:
     src: hosts.j2
     dest: "/etc/hosts"
-  vars:
-    stuff: "{{ hostvars[my_host]['ipa'] | dict2items | first }}"
 
-- name: Set up new IP addresses
+# - name: Deploy networking profiles
+#   include_tasks: setup_nic_services.yml
+- name: Copy netctl config
   ansible.builtin.template:
-    src: "{{ item.value['type'] }}.j2"
-    dest: "/etc/netctl/{{ item.value['type'] }}"
-  loop: "{{ hostvars[my_host]['ipa'] | dict2items }}"
+    src: "{{ item.value['type'] }}-config.j2"
+    dest: "/etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
 
-- name: Restart networks
-  ansible.builtin.command:
-    cmd: "/usr/bin/systemctl restart netctl@{{ item.value['type'] }}.service"
-  loop: "{{ hostvars[my_host]['ipa'] | dict2items }}"
+- name: Start primary network
+  ansible.builtin.shell: |
+    /usr/bin/netctl stop "{{ primary_nic.value['type'] | quote }}"
+    /usr/bin/netctl disable "{{ primary_nic.value['type'] | quote }}"
+    /usr/bin/netctl enable "{{ primary_nic.key | quote }}"
+    /usr/bin/netctl start "{{ primary_nic.key | quote }}"
+  async: 100
+  poll: 0
+
+- name: Change ansible IP address for this host
+  ansible.builtin.set_fact:
+    ansible_ssh_host: "{{ ip_start }}.{{ primary_nic.value['ip'] }}"
+
+- name: Wait for host to come back
+  local_action:
+    module: ansible.builtin.wait_for_connection
+    # host: "{{ ansible_ssh_host }}"
+    # port: 22
+    delay: 30
+    timeout: 180
 
 - name: Set hostname
   ansible.builtin.hostname:
     name: "{{ my_host }}.{{ domain }}"
     use: systemd
 
-# TODO:
-# Need to remove 'wired' and 'wireless' netctl services and add the ones
-# identified by device name (here, eth0 and wlan0)
+- name: Start secondary networks
+  ansible.builtin.shell: |
+    /usr/bin/netctl stop "{{ item.value['type'] | quote }}"
+    /usr/bin/netctl disable "{{ item.value['type'] | quote }}"
+    /usr/bin/netctl enable "{{ item.key | quote }}"
+    /usr/bin/netctl start "{{ item.key | quote }}"
+  async: 100
+  poll: 0
+  loop: "{{ other_nics }}"
 
-# But, wait until the end to actually remove 'wired' and 'wireless'.
+# # TODO:
+# # Need to remove 'wired' and 'wireless' netctl services and add the ones
+# # identified by device name (here, eth0 and wlan0)
+
+# # But, wait until the end to actually remove 'wired' and 'wireless'.

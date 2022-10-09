@@ -18,7 +18,16 @@ rpi-base:
 	ansible-playbook $(DEBUG_FLAG) -i inventory.yml rpi-img.yml
 
 rpi-test:
-	ansible-playbook $(DEBUG_FLAG) -i inventory.yml rpi-test.yml
+	@ set -e; \
+	  if [[ $(HOST) == 'unset' ]]; \
+	  then \
+	    echo "HOST must be set on the command line:"; \
+	    echo "make HOST=myhost load"; \
+	    exit; \
+	  fi; \
+	  : Are we using wired_base or wireless_base?; \
+	  base_host=$$(scripts/get_base_host.sh); \
+	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=$$base_host aa_host=$(HOST)" rpi-test.yml
 
 foo:
 	@ set -e; \
