@@ -29,7 +29,7 @@ rpi-test:
 	  base_host=$$(scripts/get_base_host.sh); \
 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=$$base_host aa_host=$(HOST)" rpi-test.yml
 
-foo:
+trans:
 	@ set -e; \
 	  if [[ $(HOST) == 'unset' ]]; \
 	  then \
@@ -41,6 +41,19 @@ foo:
 	  base_host=$$(scripts/get_base_host.sh); \
 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=$$base_host aa_host=$(HOST)" trans.yml
 
+# configure:
+# 	@ set -e; \
+# 	  if [[ $(HOST) == 'unset' ]]; \
+# 	  then \
+# 	    echo "HOST must be set on the command line:"; \
+# 	    echo "make HOST=myhost load"; \
+# 	    exit; \
+# 	  fi; \
+# 	  : Are we using wired_base or wireless_base?; \
+# 	  base_host=$$(scripts/get_base_host.sh); \
+# 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=$$base_host aa_host=$(HOST)" load.yml; \
+# 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) configure.yml
+
 load:
 	@ set -e; \
 	  if [[ $(HOST) == 'unset' ]]; \
@@ -49,10 +62,7 @@ load:
 	    echo "make HOST=myhost load"; \
 	    exit; \
 	  fi; \
-	  : Are we using wired_base or wireless_base?; \
-	  base_host=$$(scripts/get_base_host.sh); \
-	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=$$base_host aa_host=$(HOST)" load.yml; \
-	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) configure.yml
+	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) load.yml
 
 # Template to create rules for each VM host named in host_vars/
 #
@@ -60,7 +70,8 @@ load:
 define make_host
 .PHONY: $(1)
 $(1):
-	ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(1) configure.yml
+	make DEBUG_FLAG=$(DEBUG_FLAG) HOST=$(1) trans
+	make DEBUG_FLAG=$(DEBUG_FLAG) HOST=$(1) load
 endef
 
 $(foreach host,$(hosts),$(eval $(call make_host,$(host))))

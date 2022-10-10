@@ -2,12 +2,17 @@
 
 * Todo
 
-Get load step to work with RPi
-ssh with ansible key
-override ansible host IP address with ...155.42
-pacman update
-Add user
-Set up hard drive if attached
+ - [X] Get load step to work with RPi
+ - [X] ssh with ansible key
+ - [X] override ansible host IP address with ...155.42
+ - [X] pacman update
+ - [X] Add user
+ - [X] Set up hard drive if attached
+ - [ ] Test from img install
+ - [ ] Make it work without having to have primary IP addr in
+   inventory file.
+ - [ ] Make var with partitions and mount points, size, etc. for data disk(s)
+ - [ ] Make "make help"
 
 * Image files
 http://ca.us.mirror.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
@@ -79,7 +84,10 @@ c. Most of the work will be in containers rather than VMs.
 
 
 
+* Docuentation:
 
+Be chatty about jinja2 filters.
+Where did aur_builder stuff come from?
 
 * Notes:
 

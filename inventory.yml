@@ -7,6 +7,7 @@ vm:
 rpi:
   hosts:
     uriel:
+      ansible_host: 10.135.155.120
 
 x86:
   hosts:
