@@ -9,12 +9,22 @@
 #
 
 set -x
-echo Starting at $(date) >> /root/setup.log
-pacman-key --init &>> /root/setup.log
-pacman-key --populate archlinuxarm &>> /root/setup.log
+echo Starting at $(date) |& tee -a /root/setup.log
+echo "pacman-key --init" |& tee -a /root/setup.log
+pacman-key --init |& tee -a /root/setup.log
+echo "pacman-key --populate archlinuxarm" |& tee -a /root/setup.log
+pacman-key --populate archlinuxarm |& tee -a /root/setup.log
 
-pacman --noconfirm -Sy &>> /root/setup.log
-pacman --noconfirm -S python parted gnupg &>> /root/setup.log
-pacman --noconfirm -Su &>> /root/setup.log
+echo "pacman --noconfirm -Sy" |& tee -a /root/setup.log
+pacman --noconfirm -Sy |& tee -a /root/setup.log
+echo "pacman --noconfirm -S python parted gnupg" |& tee -a /root/setup.log
+pacman --noconfirm -S python parted gnupg |& tee -a /root/setup.log
+echo "gpgconf --kill all" |& tee -a /root/setup.log
+gpgconf --kill all |& tee -a /root/setup.log
+echo "gpgconf --launch all" |& tee -a /root/setup.log
+gpgconf --launch all |& tee -a /root/setup.log
+echo "pacman --noconfirm -Su" |& tee -a /root/setup.log
+pacman --noconfirm -Su |& tee -a /root/setup.log
 
+echo "reboot" |& tee -a /root/setup.log
 reboot

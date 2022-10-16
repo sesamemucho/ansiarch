@@ -6,6 +6,7 @@ ipa:
   wlp2s0:
     type: wireless
     ip: "155.161"
+    primary: true
 
 boot_partition_suffix: '2'
 root_partition_suffix: '3'

@@ -1,8 +1,0 @@
----
-# - name: Add wired netctl profile
-#   ansible.builtin.template:
-#     src: wired.j2
-#     dest: "/root/foo.txt"
-
-#   become: true
-#   become_user: '{{ user_name }}'

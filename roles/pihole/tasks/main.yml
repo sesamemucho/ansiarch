@@ -1,0 +1,98 @@
+---
+# Based on
+# https://kb.adamsdesk.com/operating_system/arch_linux_arm_install_rpi_pi_hole/
+
+- name: Install required packages
+  aur:
+    use: yay
+    name:
+      - pi-hole-server
+      - nginx-mainline
+      - php-fpm
+      - php-sqlite
+      - inetutils
+  become: yes
+  become_user: aur_builder
+  become_method: su
+  become_flags: '--login'
+
+- name: Pihole passwd
+  ansible.builtin.command: 
+    cmd: echo '' | /usr/bin/pihole -a -p
+
+- name: Enable PHP required extensions
+  ansible.builtin.copy:
+    src: pip.ini
+    dest: /etc/php/php.ini
+
+- name: Create Nginx directory for site config
+  ansible.builtin.file:
+    path: /etc/nginx/conf.d
+    state: directory
+
+- name: Set Nginx general settings
+  ansible.builtin.copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+
+- name: Create Nginx site config
+  ansible.builtin.command:
+    cmd: cp /usr/share/pihole/configs/nginx.example.conf /etc/nginx/conf.d/pihole.conf
+
+- name: Edit Nginx site config and change fastcgi_pass
+  ansible.builtin.lineinfile:
+    path: /etc/nginx/conf.d/pihole.conf
+    regexp: '^\s*fastcgi_pass'
+    line: '                fastcgi_pass  unix:/run/php-fpm/php-fpm.sock;'
+
+- name: Stop and disable "systemd-resolved.service"
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: stopped
+    enabled: no
+# systemctl stop systemd-resolved.service
+# systemctl disable systemd-resolved.service
+
+- name: Create systemd directory for php-fpm override
+  ansible.builtin.file:
+    path: /etc/systemd/system/php-fpm.service.d
+    state: directory
+
+- name: Set php-fpm.service overrides
+  ansible.builtin.copy:
+    src: php-fpm.service
+    dest: /etc/systemd/system/php-fpm.service.d/override.conf
+
+- name: Enable and start web services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop:
+    - nginx
+    - php-fpm
+
+- name: Set up full hosts file
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: "{{ item.key }}.{{ domain }}"
+    line: "{{ ip_start }}.{{ my_var }}     {{ item.key }} {{ item.key }}.{{ domain }}"
+  vars:
+    # Set up a list of all the defined IP addresses
+    iplist: "{{ hostvars | dict2items | selectattr('value.ipa', 'defined') | list}}"
+    my_var: "{{ item.value.ipa|dict2items|
+      selectattr('value.primary','defined')|
+      selectattr('value.primary')|
+      map(attribute='value.ip')|
+      first}}"
+  loop: "{{ iplist }}"
+
+- name: Add dnsmasq config file
+  ansible.builtin.template:
+    src: 10-ansiarch.j2
+    dest: /etc/dnsmasq.d/10-ansiarch.conf
+
+
+- name: Start Pi-hole services
+  ansible.builtin.command:
+    cmd: pihole restartdns

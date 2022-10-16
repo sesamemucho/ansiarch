@@ -6,5 +6,6 @@ ipa:
   wlp2s0:
     type: wireless
     ip: "155.165"
+    primary: true
 
 boottype: efi

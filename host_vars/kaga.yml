@@ -6,5 +6,7 @@ ipa:
   wlp2s0:
     type: wireless
     ip: "155.162"
+    primary: true
+
 boottype: bios
 

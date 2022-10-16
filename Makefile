@@ -41,18 +41,15 @@ trans:
 	  base_host=$$(scripts/get_base_host.sh); \
 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=$$base_host aa_host=$(HOST)" trans.yml
 
-# configure:
-# 	@ set -e; \
-# 	  if [[ $(HOST) == 'unset' ]]; \
-# 	  then \
-# 	    echo "HOST must be set on the command line:"; \
-# 	    echo "make HOST=myhost load"; \
-# 	    exit; \
-# 	  fi; \
-# 	  : Are we using wired_base or wireless_base?; \
-# 	  base_host=$$(scripts/get_base_host.sh); \
-# 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=$$base_host aa_host=$(HOST)" load.yml; \
-# 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) configure.yml
+configure:
+	@ set -e; \
+	  if [[ $(HOST) == 'unset' ]]; \
+	  then \
+	    echo "HOST must be set on the command line:"; \
+	    echo "make HOST=myhost load"; \
+	    exit; \
+	  fi; \
+	ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) configure.yml
 
 load:
 	@ set -e; \

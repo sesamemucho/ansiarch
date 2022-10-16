@@ -7,3 +7,6 @@ ipa:
   wlan0:
     type: wireless
     ip: "155.160"
+
+config_roles:
+  - pihole
