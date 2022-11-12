@@ -3,8 +3,6 @@
   fail:
     msg: "This host is not booted from the Arch install media!"
   when: ansible_nodename != 'archiso'
-  tags:
-    - quick_exit
 
 - name: Set up pacman
   command: pacman-key --init
@@ -14,13 +12,9 @@
 
 - name: Synchronize clock via NTP
   command: timedatectl set-ntp true
-  tags:
-    - sync_clock
 
 - name: Wipe install drive and all its partitions
   command: find /dev -wholename "{{ install_drive }}*" -exec wipefs --force --all {} \;
-  tags:
-    - wipefs
 
 - name: Create Boot partitions
   parted:
@@ -176,7 +170,7 @@
   tags:
     - fstab
 
-- name: Set local timezone
+  - name: Set local timezone
   command: arch-chroot /mnt ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
   tags:
     - timezone

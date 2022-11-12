@@ -4,6 +4,8 @@ base_wireless_addr: "155.43"
 dhcp_start: "155.50"
 dhcp_end: "155.99"
 
+remote_addr: "192.168.68.113"
+
 ansible_ssh_common_args: '-o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null'
 
 install_drive: /dev/sda

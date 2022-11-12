@@ -24,6 +24,19 @@
     src: iwd.j2
     dest: "{{ archiso_profile_dir }}/airootfs/var/lib/iwd/{{ wireless_ssid }}.psk"
 
+- name: Ensure network profile directory exists
+  ansible.builtin.file:
+    path: "{{ archiso_profile_dir }}/airootfs/etc/systemd/network"
+    state: directory
+
+- name: Add network profile
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ archiso_profile_dir }}/airootfs/etc/systemd/network/{{ item }}"
+  loop:
+    - 10-ethernet.network
+    - 10-wlan.network
+
 - name: Ensure .ssh directory exists
   ansible.builtin.file:
     path: "{{ archiso_profile_dir }}/airootfs/root/.ssh"
@@ -82,6 +95,6 @@
     force: yes
     state: link
 
-- name: Make the Arch ISO
-  ansible.builtin.shell:
-    cmd: mkarchiso -v -w "{{ archiso_working_dir }}" -o "{{ archiso_output_dir }}" "{{ archiso_profile_dir }}"
+# - name: Make the Arch ISO
+#   ansible.builtin.shell:
+#     cmd: mkarchiso -v -w "{{ archiso_working_dir }}" -o "{{ archiso_output_dir }}" "{{ archiso_profile_dir }}"

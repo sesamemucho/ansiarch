@@ -6,8 +6,8 @@
   pre_tasks:
     - name: Create ssh key
       ansible.builtin.command:
-        cmd: /usr/bin/ssh-keygen -f "files/{{ ansible_ssh_private_key_file }}" -N ""
-        creates: "files/{{ ansible_ssh_private_key_file }}*"
+        cmd: /usr/bin/ssh-keygen -f "{{ ansible_ssh_private_key_file }}" -N ""
+        creates: "{{ ansible_ssh_private_key_file }}*"
       
   roles:
     - archiso
