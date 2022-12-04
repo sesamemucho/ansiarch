@@ -16,6 +16,12 @@
   become_method: su
   become_flags: '--login'
 
+- name: Set ownership of DHCP leases directory
+  ansible.builtin.file:
+    path: /var/lib/misc
+    owner: pihole
+    group: pihole
+
 - name: Pihole passwd
   ansible.builtin.command: 
     cmd: echo '' | /usr/bin/pihole -a -p

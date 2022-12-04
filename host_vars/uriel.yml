@@ -2,7 +2,7 @@
 ipa:
   eth0:
     type: wired
-    ip: "155.120"
+    ip: "155.3"
     primary: true
   wlan0:
     type: wireless
