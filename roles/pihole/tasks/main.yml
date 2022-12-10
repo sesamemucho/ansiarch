@@ -78,20 +78,10 @@
     - nginx
     - php-fpm
 
-- name: Set up full hosts file
-  ansible.builtin.lineinfile:
-    path: /etc/hosts
-    regexp: "{{ item.key }}.{{ domain }}"
-    line: "{{ ip_start }}.{{ my_var }}     {{ item.key }} {{ item.key }}.{{ domain }}"
-  vars:
-    # Set up a list of all the defined IP addresses
-    iplist: "{{ hostvars | dict2items | selectattr('value.ipa', 'defined') | list}}"
-    my_var: "{{ item.value.ipa|dict2items|
-      selectattr('value.primary','defined')|
-      selectattr('value.primary')|
-      map(attribute='value.ip')|
-      first}}"
-  loop: "{{ iplist }}"
+- name: Set up /etc/hosts
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: "/etc/hosts"
 
 - name: Add dnsmasq config file
   ansible.builtin.template:

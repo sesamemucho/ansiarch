@@ -2,10 +2,7 @@
 ipa:
   eth0:
     type: wired
-    ip: "155.104"
-    primary: true
+    style: DHCP
   wlan0:
     type: wireless
-    ip: "155.164"
-
-wired_interface: eth0
+    style: DHCP

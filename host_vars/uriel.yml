@@ -3,10 +3,11 @@ ipa:
   eth0:
     type: wired
     ip: "155.3"
-    primary: true
+    style: static
   wlan0:
     type: wireless
     ip: "155.160"
+    style: static
 
 config_roles:
   - pihole
