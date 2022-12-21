@@ -10,8 +10,5 @@ Key='{{ wireless_key }}'
 # Uncomment this if your ssid is hidden
 #Hidden=yes
 
-IP=static
+IP=dhcp
 ExcludeAuto=no
-Address=("{{ ip_start }}.{{ item.value['ip'] }}/{{ ip_cidr }}")
-#Gateway='{{ gateway }}'
-DNS=('{{ dns }}', '8.8.8.8')

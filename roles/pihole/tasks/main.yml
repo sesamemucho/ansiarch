@@ -71,7 +71,7 @@
 
 - name: Enable and start web services
   ansible.builtin.systemd:
-    name: "{{ item }}"
+    `name: "{{ item }}"
     state: started
     enabled: yes
   loop:
@@ -88,6 +88,10 @@
     src: 10-ansiarch.j2
     dest: /etc/dnsmasq.d/10-ansiarch.conf
 
+- name: Set up variables for pi hole
+  ansible.builtin.template:
+    src: setupVars.conf.j2
+    dest: /etc/pihole/setupVars.conf
 
 - name: Start Pi-hole services
   ansible.builtin.command:

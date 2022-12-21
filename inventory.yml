@@ -29,7 +29,7 @@ support:
     wired_base:
       ansible_host: 10.135.155.42
     wireless_base:
-      ansible_host: 10.135.155.43
+      ansible_host: 10.135.155.77
     remote_base:
       ansible_host: 192.168.68.113
 

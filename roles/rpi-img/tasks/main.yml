@@ -4,6 +4,12 @@
     cmd: "{{ lookup('template', 'rpi-img-pt1.sh.j2') }}"
   register: rpi_image_result
 
+- name: Set RPI initial host name
+  ansible.builtin.file:
+    path: "{{ rpi_mount_point }}/etc/hostname"
+    state: file
+    mode: '0644'
+    
 - name: Ensure .ssh directory exists
   ansible.builtin.file:
     path: "{{ rpi_mount_point }}/root/.ssh"
@@ -21,58 +27,6 @@
   loop:
     - wired
     - wireless
-
-# - name: Prepare dir for wired profile
-#   ansible.builtin.file:
-#     path: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wired.service.d"
-#     state: directory
-#     mode: '0755'
-
-# - name: Link multi-user target
-#   ansible.builtin.file:
-#     src: "/usr/lib/systemd/system/netctl@.service"
-#     dest: "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/netctl@wired.service"
-#     force: yes
-#     follow: False
-#     state: link
-
-# - name: Add wired netctl profile
-#   ansible.builtin.template:
-#     src: wired-profile.j2
-#     dest: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wired.service.d/profile.conf"
-
-# - name: Copy wired netctl profile
-#   ansible.builtin.template:
-#     src: wired.j2
-#     dest: "{{ rpi_mount_point }}/etc/netctl/wired"
-
-# - name: Prepare dir for wireless profile
-#   ansible.builtin.file:
-#     path: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wireless.service.d"
-#     state: directory
-#     mode: '0755'
-
-# - name: Link multi-user target
-#   ansible.builtin.file:
-#     src: "/usr/lib/systemd/system/netctl@.service"
-#     dest: "{{ rpi_mount_point }}/etc/systemd/system/multi-user.target.wants/netctl@wireless.service"
-#     force: yes
-#     follow: False
-#     state: link
-
-# - name: Add wireless netctl profile
-#   ansible.builtin.template:
-#     src: wireless-profile.j2
-#     dest: "{{ rpi_mount_point }}/etc/systemd/system/netctl@wireless.service.d/profile.conf"
-
-# - name: Copy wireless netctl profile
-#   ansible.builtin.template:
-#     src: wireless.j2
-#     dest: "{{ rpi_mount_point }}/etc/netctl/wireless"
-
-# Removed "/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service".
-# Removed "/etc/systemd/system/sockets.target.wants/systemd-networkd.socket".
-# Removed "/etc/systemd/system/dbus-org.freedesktop.network1.service".
 
 - name: Disable systemd-networkd service (now using netctl)
   ansible.builtin.file:
