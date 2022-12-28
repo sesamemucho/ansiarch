@@ -1,46 +1,66 @@
 ---
-# - name: Set up full hosts file
-#   ansible.builtin.lineinfile:
-#     path: /etc/hosts
-#     regexp: "{{ item.key }}.{{ domain }}"
-#     line: "{{ ip_start }}.{{ my_var }}     {{ item.key }} {{ item.key }}.{{ domain }}"
-#
-#    vars:
-#      # Set up a list of all the defined IP addresses
-#      iplist: "{{ hostvars | dict2items | selectattr('value.ipa', 'defined') | list}}"
-#      my_var: "{{ item.value.ipa|dict2items|
-#        selectattr('value.primary','defined')|
-#        selectattr('value.primary')|
-#        map(attribute='value.ip')|
-#        first}}"
-#    loop: "{{ iplist }}"
-
-# - name: Deploy networking profiles
-#   include_tasks: setup_nic_services.yml
-- name: Copy netctl config
+- name: Copy netctl DHCP config
   ansible.builtin.template:
     src: "{{ item.value['type'] }}-config.j2"
     dest: "/etc/netctl/{{ item.key }}"
   loop: "{{ niclist }}"
+  when: item.value['style'] == "dhcp"
 
-- name: Start primary network
+- name: Copy netctl static config
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}-static-config.j2"
+    dest: "/etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: item.value['style'] == "static"
+
+- name: Print the value
+  shell: |
+    /usr/bin/getent hosts gabriel | /usr/bin/awk '{print $1}' 
+  register: connected_ip
+  delegate_to: localhost
+
+- name: set fact
+  set_fact:
+    conn_ip: "{{ connected_ip.stdout }}"
+
+- name: More see
+  ansible.builtin.debug:
+    msg: "gabriel: Found interface {{ item }}: {{ hostvars['gabriel']['ansible_' + item] }}"
+  loop: "{{ ansible_interfaces }}"
+  # Which interface on gabriel has the address at which the ansible host has connected?
+  when: hostvars['gabriel']['ansible_' + item].ipv4.address == conn_ip
+
+- name: Set connected interface, type, and style
+  ansible.builtin.set_fact:
+    conn_interface: "{{ item }}"
+    conn_type: "{{ hostvars[my_host]['ipa'][item]['type'] }}"
+    conn_style: "{{ hostvars[my_host]['ipa'][item]['style'] }}"
+  loop: "{{ ansible_interfaces }}"
+  # Which interface on gabriel has the address at which the ansible host has connected?
+  when: hostvars['gabriel']['ansible_' + item].ipv4.address == conn_ip
+
+- name: Start current NIC
   ansible.builtin.shell: |
-    /usr/bin/netctl stop "{{ primary_nic.value['type'] | quote }}"
-    /usr/bin/netctl disable "{{ primary_nic.value['type'] | quote }}"
-    /usr/bin/netctl enable "{{ primary_nic.key | quote }}"
-    /usr/bin/netctl start "{{ primary_nic.key | quote }}"
+    /usr/bin/netctl stop "{{ conn_type }}"
+    /usr/bin/netctl disable "{{ conn_type }}"
+    /usr/bin/netctl enable "{{ conn_interface }}"
+    /usr/bin/netctl start "{{ conn_interface }}"
   async: 100
   poll: 0
 
+- name: Change ansible name for this host
+  ansible.builtin.set_fact:
+    ansible_ssh_host: "{{ my_host }}"
+  when: my_host != "uriel"
+
 - name: Change ansible IP address for this host
   ansible.builtin.set_fact:
-    ansible_ssh_host: "{{ ip_start }}.{{ primary_nic.value['ip'] }}"
+    ansible_ssh_host: "{{ ip_start }}.{{ hostvars[my_host]['ipa'][conn_interface]['ip'] }}"
+  when: conn_style == 'static'
 
 - name: Wait for host to come back
   local_action:
     module: ansible.builtin.wait_for_connection
-    # host: "{{ ansible_ssh_host }}"
-    # port: 22
     delay: 30
     timeout: 180
 
@@ -51,16 +71,11 @@
 
 - name: Start secondary networks
   ansible.builtin.shell: |
-    /usr/bin/netctl stop "{{ item.value['type'] | quote }}"
-    /usr/bin/netctl disable "{{ item.value['type'] | quote }}"
-    /usr/bin/netctl enable "{{ item.key | quote }}"
-    /usr/bin/netctl start "{{ item.key | quote }}"
+    /usr/bin/netctl stop "{{ item.value['type'] }}"
+    /usr/bin/netctl disable "{{ item.value['type'] }}"
+    /usr/bin/netctl enable "{{ item.key }}"
+    /usr/bin/netctl start "{{ item.key }}"
   async: 100
   poll: 0
-  loop: "{{ other_nics }}"
-
-# # TODO:
-# # Need to remove 'wired' and 'wireless' netctl services and add the ones
-# # identified by device name (here, eth0 and wlan0)
-
-# # But, wait until the end to actually remove 'wired' and 'wireless'.
+  loop: "{{ niclist }}"
+  when: item != conn_interface

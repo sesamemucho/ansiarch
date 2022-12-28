@@ -2,7 +2,7 @@
 ipa:
   eth0:
     type: wired
-    style: DHCP
+    style: dhcp
   wlan0:
     type: wireless
-    style: DHCP
+    style: dhcp

@@ -2,6 +2,9 @@
 
 my_host: "{{ aa_host }}"
 niclist: "{{ hostvars[my_host]['ipa']|dict2items }}"
+default_interface: "{{ ansible_default_ipv4['interface'] }}"
+default_nic: "{{ hostvars[my_host]['ipa'][default_interface] }}"
+
 # # The primary NIC is the first one that has 'value.primary' set to
 # # true. I say 'first', but really there should only be one defined
 # # this way.

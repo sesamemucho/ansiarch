@@ -1,4 +1,9 @@
-* Project
+:PROPERTIES:
+:ID:       e1cfba58-4a56-499f-a385-88050eab431c
+:END:
+#+title: ansible-archlinux
+#+filetags: :project:
+
 
 * Todo
 
@@ -82,6 +87,29 @@ for work practice.
 
 c. Most of the work will be in containers rather than VMs.
 
+** Network transitioning from initial image to configured machine
+
+*** Raspberry Pi
+Initial image has a host name of 'gabriel' (the changing
+trickster). It will come up and have an address assigned via DHCP on
+its active NIC. The YAML file for the new host will have a structure
+named 'ipa' which identifies each NIC, and says if the connection is
+wired or wireless, DHCP or static, and if static, what the last two
+octets are.
+
+Ansible facts will tell us what NIC gabriel is using, and whether it
+is a wired or wireless connection. The task for the 'trans_rpi' role
+will disable/stop the default configuration for this NIC and
+enable/start the new configuration for this NIC. It will then wait for
+the RPi to reconnect. After that, it will disable and stop the other
+default NICs and enable the new NIC configurations. We do it this way
+so as to guarantee that we can re-connect with the RPi.
+Note:
+https://medium.com/opsops/ansible-default-ipv4-is-not-what-you-think-edb8ab154b10
+"It is the IP address which resides on interface where the default
+route points to."
+
+
 
 
 * Docuentation:
@@ -129,3 +157,4 @@ progress, log into the rpi as root, and run the command
 
 *** inventory.yml
 The primary inventory file for this project. It defines the 
+

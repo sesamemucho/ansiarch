@@ -5,9 +5,9 @@
   register: rpi_image_result
 
 - name: Set RPI initial host name
-  ansible.builtin.file:
-    path: "{{ rpi_mount_point }}/etc/hostname"
-    state: file
+  ansible.builtin.copy:
+    src: "hostname"
+    dest: "{{ rpi_mount_point }}/etc/hostname"
     mode: '0644'
     
 - name: Ensure .ssh directory exists
