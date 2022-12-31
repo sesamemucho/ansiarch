@@ -1,2 +1,2 @@
 
-{{ ip_start }}.{{ primary_nic.value['ip'] }}  {{ my_host }} {{ my_host }}.{{ domain }}
+{{ ip_start }}.{{ hostvars[ansible_hostname]['ipa']['eth0']['ip'] }}  {{ ansible_hostname }} {{ ansible_hostname }}.{{ domain }}

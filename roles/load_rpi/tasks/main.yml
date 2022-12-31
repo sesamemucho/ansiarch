@@ -1,6 +1,6 @@
 ---
 - name: Install basic packages
-  community.general.packaging.os.pacman:
+  community.general.packaging.pacman:
     name:
       - sudo
       - base-devel
@@ -142,7 +142,7 @@
       ansible.builtin.command: wipefs --force --all  "{{ data_drive }}"
 
     - name: Create a new primary partition
-      community.general.system.parted:
+      community.general.parted:
         device: "{{ data_drive }}"
         label: gpt
         name: data
@@ -155,7 +155,7 @@
       ansible.builtin.reboot:
 
     - name: Create filesystem
-      community.general.system.filesystem:
+      community.general.filesystem:
         fstype: btrfs
         dev: "{{ data_drive }}1"
 

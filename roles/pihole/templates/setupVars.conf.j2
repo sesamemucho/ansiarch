@@ -1,5 +1,5 @@
 IHOLE_INTERFACE=eth0
-IPV4_ADDRESS={{ ip_start }}.{{ primary_nic.value['ip'] }}/{{ prefix }}
+IPV4_ADDRESS={{ ip_start }}.{{ hostvars[ansible_hostname]['ipa']['eth0']['ip'] }}/{{ prefix }}
 IPV6_ADDRESS=
 INSTALL_WEB_INTERFACE=true
 QUERY_LOGGING=true
