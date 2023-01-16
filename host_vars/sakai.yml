@@ -1,17 +1,12 @@
 ---
 ipa:
-  enp3s0:
+  eno1:
     type: wired
-    ip: "155.101"
-  wlp2s0:
+    style: dhcp
+  wlo1:
     type: wireless
-    ip: "155.161"
-    primary: true
+    style: dhcp
 
 boot_partition_suffix: '2'
 root_partition_suffix: '3'
 boottype: bios
-# This file is for use by update-ip-addr.sh
-wired_interface: eno1
-use_wireless: yes
-wireless_interface: wlo1

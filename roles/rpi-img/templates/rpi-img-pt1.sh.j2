@@ -24,24 +24,3 @@ mount ${loopdev}p1 {{ rpi_mount_point }}/boot
 
 echo "Copying ArchLinux image to image file"
 tar xpf "{{ rpi_arch_tgz }}" -C {{ rpi_mount_point }}
-
-
-# # Setup base IP config
-# cat <<EOF >"{{ rpi_mount_point }}/etc/systemd/network/eth0.network"
-# [Match]
-# Name=eth0
-
-# [Network]
-# Address={{ ip_start }}.{{ base_wired_addr }}/{{ ip_cidr }}
-# Gateway={{ gateway }}
-# DNS={{ dns }}
-# EOF
-
-# # Allow root ssh login for ansible work
-# echo "PermitRootLogin yes" >>"{{ rpi_mount_point }}/etc/ssh/sshd_config"
-
-# sync
-# umount {{ rpi_mount_point }}/boot
-# umount {{ rpi_mount_point }}
-
-# losetup -D

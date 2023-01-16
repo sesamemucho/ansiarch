@@ -6,3 +6,6 @@ ipa:
   wlan0:
     type: wireless
     style: dhcp
+
+config_roles:
+  - basic

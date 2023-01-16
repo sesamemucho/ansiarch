@@ -1,0 +1,11 @@
+---
+- hosts: "{{ base_host }}"
+  become: yes
+
+  vars:
+    - my_host: '{{ aa_host }}'
+    - my_host_vars: '{{ hostvars[my_host] }}'
+    - niclist: "{{ my_host_vars['ipa']|dict2items }}"
+
+  roles:
+    - pre_load

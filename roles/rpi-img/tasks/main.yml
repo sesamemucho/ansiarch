@@ -38,6 +38,20 @@
     - "{{ rpi_mount_point }}/etc/systemd/system/sockets.target.wants/systemd-networkd.socket"
     - "{{ rpi_mount_point }}/etc/systemd/system/dbus-org.freedesktop.network1.service"
 
+# We are sending the local hostname to the DHCP server, and not
+# requesting one from it
+- name: Don't request hostname from DHCP server
+  ansible.builtin.lineinfile:
+    path: "{{ rpi_mount_point }}/etc/dhcpcd.conf"
+    regexp: '^option host_name'
+    line: '#option host_name'
+
+- name: Send hostname to DHCP server
+  ansible.builtin.lineinfile:
+    path: "{{ rpi_mount_point }}/etc/dhcpcd.conf"
+    regexp: '^#hostname'
+    line: 'hostname'
+
 - name: Set up system setup script
   ansible.builtin.copy:
     src: setup.sh

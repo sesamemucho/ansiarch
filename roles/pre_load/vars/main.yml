@@ -1,0 +1,6 @@
+---
+pacstrap_extras:
+  bios: 'gptfdisk syslinux'
+  efi:  'efibootmgr'
+
+my_boottype: "{{ my_host_vars['boottype'] }}"

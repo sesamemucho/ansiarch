@@ -1,0 +1,8 @@
+---
+# Stuff that all Arch Linux installations need.
+- name: install and update basic packages
+  community.general.packaging.os.pacman:
+    name:
+      - btrfs-progs
+      - rsync
+    extra_args: --noconfirm --needed

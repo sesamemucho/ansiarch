@@ -95,6 +95,11 @@
     force: yes
     state: link
 
-# - name: Make the Arch ISO
-#   ansible.builtin.shell:
-#     cmd: mkarchiso -v -w "{{ archiso_working_dir }}" -o "{{ archiso_output_dir }}" "{{ archiso_profile_dir }}"
+- name: Set start up hostname
+  ansible.builtin.copy:
+    dest: "{{ archiso_profile_dir }}/airootfs/etc/hostname"
+    content: "{{ startup_hostname }}"
+
+- name: Make the Arch ISO
+  ansible.builtin.shell:
+    cmd: mkarchiso -v -w "{{ archiso_working_dir }}" -o "{{ archiso_output_dir }}" "{{ archiso_profile_dir }}"

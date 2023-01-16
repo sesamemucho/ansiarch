@@ -1,0 +1,253 @@
+---
+- name: Abort if the host is not booted from the Arch install media
+  fail:
+    msg: "This host is not booted from the Arch install media!"
+  when: ansible_nodename != 'gabriel'
+
+# - name: debug1
+#   ansible.builtin.debug:
+#     var: my_host_vars
+
+# - name: foo
+#   ansible.builtin.fail:
+#     msg: "bye"
+
+- name: Set up pacman
+  command: pacman-key --init
+
+- name: Set up archlinux keys
+  command: pacman-key --populate archlinux
+
+# - name: Synchronize clock via NTP
+#   command: timedatectl set-ntp true
+
+- name: Wipe install drive and all its partitions
+  command: find /dev -wholename "{{ my_host_vars['install_drive'] }}*" -exec wipefs --force --all {} \;
+
+- name: Create Boot partitions
+  parted:
+    device: "{{ my_host_vars['install_drive'] }}"
+    label: gpt
+    number: "{{ item.num }}"
+    part_start: "{{ item.start }}"
+    part_end: "{{ item.end }}"
+    name: "{{ item.name }}"
+    # Can't use flags: here because
+    #   The first partition is the only one that can validly have a flag
+    #   If the flag: keyword is present, parted will try to set that flag
+    #    even if the flag is blank, which will cause a syntax error in the parted
+    #    commmand.
+    state: present
+  loop: "{{ my_host_vars['partitions'][my_boottype] }}"
+
+- name: Create Boot partition flag
+  parted:
+    device: "{{ my_host_vars['install_drive'] }}"
+    label: gpt
+    number: "{{ item.num }}"
+    flags: ["{{ item.flags }}"]
+    state: present
+  loop: "{{ my_host_vars['partition_flags'][my_boottype]}}"
+
+- name: Setup LUKS encryption key
+  block:
+    - name: Copy keyfile
+      copy:
+        content: "{{ my_host_vars['luks_key'] }}"
+        dest: /root/keyfile
+
+- name: Setup LUKS encryption for root filesystem
+  block:
+    - name: Destroy existing LUKS volume
+      luks_device:
+        device: "{{ my_host_vars['install_drive'] }}{{ my_host_vars['partition_number'][my_boottype]['root_suffix'] }}"
+        state: absent
+
+    - name: Create and open LUKS volume
+      luks_device:
+        device: "{{ my_host_vars['install_drive'] }}{{ my_host_vars['partition_number'][my_boottype]['root_suffix'] }}"
+        keyfile: /root/keyfile
+        name: root
+        state: opened
+
+    - name: Get UUID for root LUKS volume
+      command: blkid -s UUID -o value "{{ my_host_vars['install_drive'] }}{{ my_host_vars['partition_number'][my_boottype]['root_suffix'] }}"
+      register: root_luks_uuid
+      changed_when: false
+
+    - name: Print return information from the previous task
+      ansible.builtin.debug:
+        var: root_luks_uuid
+        verbosity: 2
+
+- name: Create filesystems
+  block:
+    - name: Create FAT32 filesystem in boot partition
+      filesystem:
+        dev: "{{ my_host_vars['install_drive'] }}{{ my_host_vars['partition_number'][my_boottype]['boot_suffix'] }}"
+        fstype: vfat
+        opts: -F32
+        force: yes
+
+    - name: Create requested filesystem in root volume
+      filesystem:
+        dev: /dev/mapper/root
+        fstype: "{{ my_host_vars['root_filesystem'] }}"
+        force: yes
+
+    - name: Get UUID for root filesystem
+      command: blkid -s UUID -o value /dev/mapper/root
+      register: root_uuid
+      changed_when: false
+
+- name: Mount filesystems
+  block:
+    - name: Mount root filesystem
+      mount:
+        path: /mnt
+        src: /dev/mapper/root
+        fstype: "{{ my_host_vars['root_filesystem'] }}"
+        state: mounted
+
+    - name: Create mountpoint for boot volume
+      file:
+        path: /mnt/boot
+        state: directory
+
+    - name: Mount boot filesystem
+      mount:
+        path: /mnt/boot
+        src: "{{ my_host_vars['install_drive'] }}{{ my_host_vars['partition_number'][my_boottype]['boot_suffix'] }}"
+        fstype: vfat
+        state: mounted
+
+- name: Rank Arch mirrors
+  block:
+    - name: Install the reflector package (for rankmirrors)
+      pacman:
+        name:
+          - reflector
+        update_cache: yes
+
+    - name: filter the fastest mirrors that support HTTPS
+      shell: reflector --verbose --latest 10 --sort rate | awk -e '! /rsync/ {print}' > /etc/pacman.d/mirrorlist
+
+- name: Run pacstrap
+  command: pacstrap /mnt base ansible btrfs-progs dhclient dhcpcd git grub linux linux-firmware netctl openssh python rsync sshpass sudo vim wpa_supplicant {{ pacstrap_extras[my_boottype] }}
+
+- name: Generate fstab
+  block:
+    - name: Generate blank fstab
+      command: genfstab -U /mnt >> /mnt/etc/fstab
+
+    - name: Add root volume to fstab
+      mount:
+        fstab: /mnt/etc/fstab
+        path: /
+        src: /dev/mapper/root
+        fstype: "{{ my_host_vars['root_filesystem'] }}"
+        opts: defaults
+        passno: '0'
+        state: present
+
+    - name: Add boot volume to fstab
+      mount:
+        fstab: /mnt/etc/fstab
+        path: /boot
+        src: "{{ my_host_vars['install_drive'] }}{{ my_host_vars['partition_number'][my_boottype]['boot_suffix'] }}"
+        fstype: vfat
+        opts: defaults
+        passno: '2'
+        state: present
+
+- name: Set local timezone
+  command: arch-chroot /mnt ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
+
+- name: Generate adjtime file
+  command: arch-chroot /mnt hwclock --systohc
+
+- name: Setup locales
+  block:
+    - name: Configure locale.gen
+      lineinfile:
+        dest: /mnt/etc/locale.gen
+        regexp: '{{ item.regex }}'
+        line: '{{ item.line }}'
+      loop:
+        - {regex: en_US\.UTF-8 UTF-8, line: en_US.UTF-8 UTF-8}
+        - {regex: en_US ISO-8859-1, line: en_US ISO-8859-1}
+
+    - name: Create locale.conf
+      copy:
+        content: "LANG=en_US.UTF-8"
+        dest: /mnt/etc/locale.conf
+
+    - name: Generate locales
+      command: arch-chroot /mnt locale-gen
+
+# We are sending the local hostname to the DHCP server, and not
+# requesting one from it
+- name: Don't request hostname from DHCP server
+  ansible.builtin.lineinfile:
+    path: "/mnt/etc/dhcpcd.conf"
+    regexp: '^option host_name'
+    line: '#option host_name'
+
+- name: Send hostname to DHCP server
+  ansible.builtin.lineinfile:
+    path: "/mnt/etc/dhcpcd.conf"
+    regexp: '^#hostname'
+    line: 'hostname'
+
+- name: Copy netctl DHCP config
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}-config.j2"
+    dest: "/mnt/etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: item.value['style'] == "dhcp"
+
+- name: Copy netctl static config
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}-static-config.j2"
+    dest: "/mnt/etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: item.value['style'] == "static"
+
+- name: Enable all netctl profiles
+  ansible.builtin.command: arch-chroot /mnt netctl enable "{{ item.key }}"
+  loop: "{{ niclist }}"
+
+- name: Enable sshd
+  ansible.builtin.command: arch-chroot /mnt systemctl enable sshd
+
+- name: Set up initramfs
+  block:
+    - name: Add vconsole.conf
+      ansible.builtin.template:
+        src: files/vconsole.conf.j2
+        dest: /mnt/etc/vconsole.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Add mkinitcpio.conf hooks
+      lineinfile:
+        dest: /mnt/etc/mkinitcpio.conf
+        regexp: ^HOOKS=
+        line: HOOKS=(base systemd modconf block keyboard sd-vconsole autodetect sd-encrypt filesystems fsck)
+      notify:
+        - Update mkinitcpio
+
+- name: Set hostname
+  ansible.builtin.copy:
+    content: '{{ my_host }}'
+    dest: /mnt/etc/hostname
+
+- name: Set root password
+  ansible.builtin.copy:
+    dest: "/mnt/etc/shadow"
+    content: "root:$6$MxIBspl6qRe.Yrhl$elIyfIYY.IBz5c4fXrDebJsPBrOM6xqzWFz0PfWoxEEPqrOsuel3DYVlyfSFoBdti.dmEjUsssAa/wlGh4VyO1:14871::::::"
+
+- name: Setup boot
+  import_tasks: boot.yml
+

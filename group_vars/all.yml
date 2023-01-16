@@ -1,12 +1,9 @@
 ---
-base_wired_addr: "155.42"
-base_wireless_addr: "155.77"
-#base_wireless_addr: "155.43"
 dhcp_start: "155.50"
 dhcp_end: "155.99"
 prefix: "16"
 
-remote_addr: "192.168.68.113"
+startup_hostname: "gabriel"
 
 ansible_ssh_common_args: '-o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o GlobalKnownHostsFile=/dev/null -o UserKnownHostsFile=/dev/null'
 

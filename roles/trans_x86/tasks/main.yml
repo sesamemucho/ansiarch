@@ -1,17 +1,17 @@
 ---
-- name: Copy netctl DHCP config
-  ansible.builtin.template:
-    src: "{{ item.value['type'] }}-config.j2"
-    dest: "/etc/netctl/{{ item.key }}"
-  loop: "{{ niclist }}"
-  when: item.value['style'] == "dhcp"
+# - name: Copy netctl DHCP config
+#   ansible.builtin.template:
+#     src: "{{ item.value['type'] }}-config.j2"
+#     dest: "/etc/netctl/{{ item.key }}"
+#   loop: "{{ niclist }}"
+#   when: item.value['style'] == "dhcp"
 
-- name: Copy netctl static config
-  ansible.builtin.template:
-    src: "{{ item.value['type'] }}-static-config.j2"
-    dest: "/etc/netctl/{{ item.key }}"
-  loop: "{{ niclist }}"
-  when: item.value['style'] == "static"
+# - name: Copy netctl static config
+#   ansible.builtin.template:
+#     src: "{{ item.value['type'] }}-static-config.j2"
+#     dest: "/etc/netctl/{{ item.key }}"
+#   loop: "{{ niclist }}"
+#   when: item.value['style'] == "static"
 
 - name: Print the value
   shell: |

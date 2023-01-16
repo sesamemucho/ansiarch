@@ -1,257 +1,61 @@
 ---
-- name: Abort if the host is not booted from the Arch install media
-  fail:
-    msg: "This host is not booted from the Arch install media!"
-  when: ansible_nodename != 'archiso'
-
-- name: Set up pacman
-  command: pacman-key --init
-
-- name: Set up archlinux keys
-  command: pacman-key --populate archlinux
-
-- name: Synchronize clock via NTP
-  command: timedatectl set-ntp true
-
-- name: Wipe install drive and all its partitions
-  command: find /dev -wholename "{{ install_drive }}*" -exec wipefs --force --all {} \;
-
-- name: Create Boot partitions
-  parted:
-    device: '{{ install_drive }}'
-    label: gpt
-    number: "{{ item.num }}"
-    part_start: "{{ item.start }}"
-    part_end: "{{ item.end }}"
-    name: "{{ item.name }}"
-    # Can't use flags: here because
-    #   The first partition is the only one that can validly have a flag
-    #   If the flag: keyword is present, parted will try to set that flag
-    #    even if the flag is blank, which will cause a syntax error in the parted
-    #    commmand.
-    state: present
-  loop: "{{ partitions[boottype] }}"
-  tags:
-    - repartition
-
-- name: Create Boot partition flag
-  parted:
-    device: '{{ install_drive }}'
-    label: gpt
-    number: "{{ item.num }}"
-    flags: ["{{ item.flags }}"]
-    state: present
-  loop: "{{ partition_flags[boottype] }}"
-  tags:
-    - repartition
-
-- name: Setup LUKS encryption key
-  block:
-    - name: Copy keyfile
-      copy:
-        src: 'luks_keyfile'
-        dest: /root/keyfile
-  tags:
-    - luks1
-
-- name: Setup LUKS encryption for root filesystem
-  block:
-    - name: Destroy existing LUKS volume
-      luks_device:
-        device: '{{ install_drive }}{{ partition_number[boottype]["root_suffix"] }}'
-        state: absent
-
-    - name: Create and open LUKS volume
-      luks_device:
-        device: '{{ install_drive }}{{ partition_number[boottype]["root_suffix"] }}'
-        keyfile: /root/keyfile
-        name: root
-        state: opened
-
-    - name: Get UUID for root LUKS volume
-      command: blkid -s UUID -o value '{{ install_drive }}{{ partition_number[boottype]["root_suffix"] }}'
-      register: root_luks_uuid
-      changed_when: false
-
-    - name: Print return information from the previous task
-      ansible.builtin.debug:
-        var: root_luks_uuid
-        verbosity: 2
-  tags:
-    - luks2
-
-- name: Create filesystems
-  block:
-    - name: Create FAT32 filesystem in boot partition
-      filesystem:
-        dev: '{{ install_drive }}{{ partition_number[boottype]["boot_suffix"] }}'
-        fstype: vfat
-        opts: -F32
-        force: yes
-
-    - name: Create requested filesystem in root volume
-      filesystem:
-        dev: /dev/mapper/root
-        fstype: "{{ root_filesystem }}"
-        force: yes
-
-    - name: Get UUID for root filesystem
-      command: blkid -s UUID -o value /dev/mapper/root
-      register: root_uuid
-      changed_when: false
-  tags:
-    - create_filesystems
-
-- name: Mount filesystems
-  block:
-    - name: Mount root filesystem
-      mount:
-        path: /mnt
-        src: /dev/mapper/root
-        fstype: "{{ root_filesystem }}"
-        state: mounted
-
-    - name: Create mountpoint for boot volume
-      file:
-        path: /mnt/boot
-        state: directory
-
-    - name: Mount boot filesystem
-      mount:
-        path: /mnt/boot
-        src: '{{ install_drive }}{{ partition_number[boottype]["boot_suffix"] }}'
-        fstype: vfat
-        state: mounted
-  tags:
-    - mount_filesystems
-
-- name: Rank Arch mirrors
-  block:
-    - name: Install the reflector package (for rankmirrors)
-      pacman:
-        name:
-          - reflector
-        update_cache: yes
-
-    - name: filter the fastest mirrors that support HTTPS
-      shell: reflector --verbose --latest 10 --sort rate | awk -e '! /rsync/ {print}' > /etc/pacman.d/mirrorlist
-  tags:
-    - mirrors
-
-- name: Run pacstrap
-  command: pacstrap /mnt base ansible btrfs-progs dhclient dhcpcd git grub linux linux-firmware netctl openssh python rsync sshpass sudo vim wpa_supplicant {{ pacstrap_extras[boottype] }}
-  tags:
-    - pacstrap
-
-- name: Generate fstab
-  block:
-    - name: Generate blank fstab
-      command: genfstab -U /mnt >> /mnt/etc/fstab
-
-    - name: Add root volume to fstab
-      mount:
-        fstab: /mnt/etc/fstab
-        path: /
-        src: /dev/mapper/root
-        fstype: "{{ root_filesystem }}"
-        opts: defaults
-        passno: '0'
-        state: present
-
-    - name: Add boot volume to fstab
-      mount:
-        fstab: /mnt/etc/fstab
-        path: /boot
-        src: '{{ install_drive }}{{ partition_number[boottype]["boot_suffix"] }}'
-        fstype: vfat
-        opts: defaults
-        passno: '2'
-        state: present
-  tags:
-    - fstab
-
-  - name: Set local timezone
-  command: arch-chroot /mnt ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
-  tags:
-    - timezone
-
-- name: Generate adjtime file
-  command: arch-chroot /mnt hwclock --systohc
-  tags:
-    - adjtime
-
-- name: Setup locales
-  block:
-    - name: Configure locale.gen
-      lineinfile:
-        dest: /mnt/etc/locale.gen
-        regexp: '{{ item.regex }}'
-        line: '{{ item.line }}'
-      loop:
-        - {regex: en_US\.UTF-8 UTF-8, line: en_US.UTF-8 UTF-8}
-        - {regex: en_US ISO-8859-1, line: en_US ISO-8859-1}
-
-    - name: Create locale.conf
-      copy:
-        content: "LANG=en_US.UTF-8"
-        dest: /mnt/etc/locale.conf
-
-    - name: Generate locales
-      command: arch-chroot /mnt locale-gen
-  tags:
-    - locales
-
 - name: Set hostname
   copy:
-    content: '{{ inventory_hostname }}'
+    content: '{{ my_host }}'
     dest: /mnt/etc/hostname
-  tags:
-    - hostname
 
-- name: Setup netctl
-  block:
-    - name: Create netctl profile for wired connection
-      copy:
-        content: |
-          Description='Wired with DHCP'
-          Interface={{ wired_interface }}
-          Connection=ethernet
-          IP=dhcp
-          IP6=dhcp-noaddr
-          # IPv6 traffic is tunneled over IPv4, which eats 20 bytes of the MTU.
-          ExecUpPost='/usr/bin/ip link set {{ wired_interface }} mtu 1480'
-        dest: /mnt/etc/netctl/wired
+- name: Copy netctl DHCP config
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}-config.j2"
+    dest: "/etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: item.value['style'] == "dhcp"
 
-    - name: Enable wired netctl profile
-      command: arch-chroot /mnt netctl enable wired
-  tags:
-    - netctl
+- name: Copy netctl static config
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}-static-config.j2"
+    dest: "/etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: item.value['style'] == "static"
 
-- name: Setup netctl wireless
-  block:
-    - name: Create netctl profile for wireless connection
-      copy:
-        content: |
-          Description='Wireless with DHCP'
-          Interface={{ wireless_interface }}
-          Connection=wireless
-          IP=dhcp
-          Security=wpa
-          ESSID='{{ wireless_ssid }}'
-          Key='{{ wireless_key }}'
-        dest: /mnt/etc/netctl/wireless
+# - name: Setup netctl
+#   block:
+#     - name: Create netctl profile for wired connection
+#       copy:
+#         content: |
+#           Description='Wired with DHCP'
+#           Interface={{ wired_interface }}
+#           Connection=ethernet
+#           IP=dhcp
+#           IP6=dhcp-noaddr
+#           # IPv6 traffic is tunneled over IPv4, which eats 20 bytes of the MTU.
+#           ExecUpPost='/usr/bin/ip link set {{ wired_interface }} mtu 1480'
+#         dest: /mnt/etc/netctl/wired
 
-    - name: Enable wireless netctl profile
-      command: arch-chroot /mnt netctl enable wireless
+#     - name: Enable wired netctl profile
+#       command: arch-chroot /mnt netctl enable wired
 
-  when: use_wireless
-  tags:
-    - netctl
+# - name: Setup netctl wireless
+#   block:
+#     - name: Create netctl profile for wireless connection
+#       copy:
+#         content: |
+#           Description='Wireless with DHCP'
+#           Interface={{ wireless_interface }}
+#           Connection=wireless
+#           IP=dhcp
+#           Security=wpa
+#           ESSID='{{ wireless_ssid }}'
+#           Key='{{ wireless_key }}'
+#         dest: /mnt/etc/netctl/wireless
+
+#     - name: Enable wireless netctl profile
+#       command: arch-chroot /mnt netctl enable wireless
+
+#   when: use_wireless
 
 - name: Enable sshd
   command: arch-chroot /mnt systemctl enable sshd
-  tags:
-    - sshd
 
 - name: Set up initramfs
   block:
@@ -270,9 +74,6 @@
         line: HOOKS=(base systemd modconf block keyboard sd-vconsole autodetect sd-encrypt filesystems fsck)
       notify:
         - Update mkinitcpio
-  tags:
-    - initramfs
-    - mkinitcpio
 
 - name: Setup boot
   import_tasks: boot.yml
@@ -305,13 +106,85 @@
       loop:
         - chmod 0600 /home/{{ user_name }}/.ssh/authorized_keys
         - chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh/authorized_keys
-  tags:
-    - user_account
+
 - name: Give passwordless sudo access to wheel group
   copy:
     content: '%wheel ALL=(ALL) NOPASSWD: ALL'
     dest: /mnt/etc/sudoers.d/wheel
     validate: /usr/sbin/visudo --check --file=%s
-  tags:
-    - sudo
 
+- name: Print the value
+  shell: |
+    /usr/bin/getent hosts gabriel | /usr/bin/awk '{print $1}' 
+  register: connected_ip
+  delegate_to: localhost
+
+- name: set fact
+  set_fact:
+    conn_ip: "{{ connected_ip.stdout }}"
+
+- name: More see 0
+  ansible.builtin.debug:
+    msg: "gabriel: conn_ip is {{ conn_ip }} For interface {{ item }}:  {{ hostvars['gabriel']['ansible_' + item] }}"
+  loop: "{{ ansible_interfaces }}"
+
+- name: More see
+  ansible.builtin.debug:
+    msg: "gabriel: Found interface {{ item }}: {{ hostvars['gabriel']['ansible_' + item] }}"
+  loop: "{{ ansible_interfaces }}"
+  # Which interface on gabriel has the address at which the ansible host has connected?
+  when: hostvars['gabriel']['ansible_' + item]['active'] and (hostvars['gabriel']['ansible_' + item]['ipv4']['address'] == conn_ip)
+
+- name: Set connected interface, type, and style
+  ansible.builtin.set_fact:
+    conn_interface: "{{ item }}"
+    conn_type: "{{ hostvars[my_host]['ipa'][item]['type'] }}"
+    conn_style: "{{ hostvars[my_host]['ipa'][item]['style'] }}"
+  loop: "{{ ansible_interfaces }}"
+  # Which interface on gabriel has the address at which the ansible host has connected?
+  when: hostvars['gabriel']['ansible_' + item]['active'] and (hostvars['gabriel']['ansible_' + item]['ipv4']['address'] == conn_ip)
+
+- name: Start current NIC
+  ansible.builtin.shell: |
+    /usr/bin/netctl stop "{{ conn_type }}"
+    /usr/bin/netctl disable "{{ conn_type }}"
+    /usr/bin/netctl enable "{{ conn_interface }}"
+    /usr/bin/netctl start "{{ conn_interface }}"
+  async: 100
+  poll: 0
+
+- name: Show name
+  ansible.builtin.debug:
+    msg: 'my_host is: {{ my_host }} domain is {{ domain }} conn_style is {{ conn_style }}'
+
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ my_host }}.{{ domain }}"
+    use: systemd
+
+- name: Change ansible name for this host
+  ansible.builtin.set_fact:
+    ansible_ssh_host: "{{ my_host }}"
+  when: my_host != "uriel"
+
+- name: Change ansible IP address for this host
+  ansible.builtin.set_fact:
+    ansible_ssh_host: "{{ ip_start }}.{{ hostvars[my_host]['ipa'][conn_interface]['ip'] }}"
+  when: conn_style == 'static'
+
+- name: Wait for host to come back
+  local_action:
+    module: ansible.builtin.wait_for_connection
+    delay: 30
+    timeout: 180
+
+- name: Start secondary networks
+  ansible.builtin.shell: |
+    /usr/bin/netctl stop "{{ item.value['type'] }}"
+    /usr/bin/netctl disable "{{ item.value['type'] }}"
+    /usr/bin/netctl enable "{{ item.key }}"
+    /usr/bin/netctl start "{{ item.key }}"
+  async: 100
+  poll: 0
+  loop: "{{ niclist }}"
+  when: item != conn_interface
