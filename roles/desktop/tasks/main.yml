@@ -1,0 +1,21 @@
+---
+- name: Install packages for desktop Wayland environment
+  kewlfft.aur.aur:
+    name:
+      - chromium
+      - dmenu
+      - firefox
+      - grim
+      - i3blocks
+      - i3status
+      - i3-wm
+      - sway
+      - swaybg
+      - swayidle
+      - swayimg
+      - swaylock
+      - waybar
+      - wdisplays
+      - xorg-xwayland
+      - zathura
+      - zathura-pdf-poppler

@@ -7,7 +7,6 @@ hosts := $(patsubst host_vars/%.yml,%,$(wildcard host_vars/*.yml))
 latest_archiso := $(shell ls archlinux-*.iso | sort | tail -1)
 gen:
 	ansible-galaxy install -r requirements.yml
-	scripts/validate.sh
 
 run:
 	run_archiso -d -i $(latest_archiso)
@@ -53,7 +52,7 @@ configure:
 	  if [[ $(HOST) == 'unset' ]]; \
 	  then \
 	    echo "HOST must be set on the command line:"; \
-	    echo "make HOST=myhost load"; \
+	    echo "make HOST=myhost configure"; \
 	    exit; \
 	  fi; \
 	ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) configure.yml

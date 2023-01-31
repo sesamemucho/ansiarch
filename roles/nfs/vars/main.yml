@@ -1,0 +1,2 @@
+---
+nfslist: "{{ hostvars['michiba']['nfs_info']|dict2items }}"

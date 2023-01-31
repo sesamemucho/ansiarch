@@ -1,0 +1,80 @@
+---
+- name: Install dev packages
+  kewlfft.aur.aur:
+    name:
+      - mlocate
+      - texinfo
+      - ansible
+      - ansible-lint
+      - the_silver_searcher
+      - valgrind
+      - vagrant
+      - gnupg
+      - which
+      - ispell
+      - bind-tools
+      - python2
+      - python
+      - python-pipx
+    update_cache: yes
+
+# - name: Python setup
+#   block:
+#     - name: Set up pipx
+#       command: python3 -m pipx ensurepath
+
+#     # - name: Install Pypi packages that are not in Arch
+#     #   pip:
+#     #     name: some-pip-package
+
+#   become: true
+
+- name: VM setup
+  block:
+    - name: Install dev packages for VM work
+      kewlfft.aur.aur:
+        name:
+          - vagrant
+          - net-tools
+          - virt-manager
+          - virt-viewer
+          - qemu
+          - edk2-ovmf
+
+    - name: Enable service libvirt
+      ansible.builtin.systemd:
+        name: libvirtd
+        enabled: yes
+        state: started
+
+    - name: Add user to libvirt-controlling group
+      ansible.builtin.user:
+        name: '{{ user_name }}'
+        groups: libvirt
+        append: yes
+
+  become: true
+
+- name: Dev setup
+  block:
+    - name: Set git global configs
+      block:
+        - name: Set git user email
+          community.general.git_config:
+            name: user.email
+            scope: global
+            value: '{{ git_user_email }}'
+          register: gubber
+
+        - name: debug
+          ansible.builtin.debug:
+            msg: 'return value is {{ gubber }}'
+
+        - name: Set git user name
+          community.general.git_config:
+            name: user.name
+            scope: global
+            value: '{{ git_user_fullname }}'
+
+      become: true
+      become_user: "{{ user_name }}"

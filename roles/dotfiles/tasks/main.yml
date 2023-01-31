@@ -1,0 +1,43 @@
+---
+- name: Install yadm dotfile manager
+
+  block:
+    - name: Check out from git
+      ansible.builtin.git:
+        repo: https://github.com/TheLocehiliosan/yadm.git
+        dest: '{{ user_home }}/Projects/readonly-repos/yadm'
+        force: yes
+
+    - name: Set repo owner
+      ansible.builtin.file:
+        path: '{{ user_home }}/Projects/readonly-repos/yadm'
+
+    - name: Make symlink to yadm executable
+      ansible.builtin.file:
+        src: '{{ user_home }}/Projects/readonly-repos/yadm/yadm'
+        dest: /usr/local/bin/yadm
+        state: link
+
+    - name: Clone dofiles repo
+      ansible.builtin.command:
+        cmd: yadm clone -w {{ user_home }} https://github.com/sesamemucho/yadm-configs
+        creates: '{{ user_home }}/.local/share/yadm/repo.git'
+      become_user: '{{ user_name }}'
+
+    - name: Activate yadm 1
+      ansible.builtin.command:
+        cmd: yadm restore --staged '{{ user_home }}'
+        creates: '{{ user_home }}/.bash.d'
+      become_user: '{{ user_name }}'
+
+    - name: Activate yadm 2
+      ansible.builtin.command:
+        cmd: yadm restore '{{ user_home }}'
+        creates: '{{ user_home }}/.bash.d'
+      become_user: '{{ user_name }}'
+
+  become: true
+  become_user: root
+
+  tags:
+    dotfiles

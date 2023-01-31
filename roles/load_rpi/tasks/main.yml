@@ -121,7 +121,7 @@
     - name: AUR installs
       block:
         - name: get yay
-          aur:
+          kewlfft.aur.aur:
             use: makepkg
             name: yay
           become_user: aur_builder

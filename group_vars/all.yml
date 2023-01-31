@@ -17,6 +17,8 @@ luks_keyfile: home_keyfile
 ansible_ssh_user: root
 ansible_ssh_private_key_file: files/ansible_archlinux
 
+nfs_server_host: michiba
+
 aa_mach_type: x86_64
 
 timezone: /usr/share/zoneinfo/America/Los_Angeles

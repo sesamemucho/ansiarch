@@ -10,3 +10,13 @@ ipa:
 boot_partition_suffix: '2'
 root_partition_suffix: '3'
 boottype: bios
+
+config_roles:
+  - pkgs_basic
+  - pkgs_admin
+  - nfs
+  - desktop
+  - pkgs_dev
+  - dotfiles
+
+nfs_type: client

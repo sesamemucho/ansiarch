@@ -8,4 +8,4 @@ ipa:
     style: dhcp
 
 config_roles:
-  - basic
+  - pkgs_basic

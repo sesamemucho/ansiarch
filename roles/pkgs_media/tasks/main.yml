@@ -1,0 +1,35 @@
+---
+# Stuff that all Arch Linux installations need.
+- name: install and update audio packages
+  aur:
+    name:
+      - alsa-utils
+      - mplayer
+      - pavucontrol
+      - pipewire
+      - pipewire-alsa
+      - pipewire-docs
+      - pipewire-pulse
+      - pamixer
+
+- name: install and update graphcs packages
+  aur:
+    name:
+      - mpv
+      - gimp
+      - inkscape
+      - youtube-dl
+      - zoom
+
+- name: install and update fonts
+  aur:
+    name:
+      - noto-fonts
+      - noto-fonts-emoji
+      - noto-fonts-extra
+      - terminus-font
+      - ttf-bitstream-vera
+      - ttf-fira-code
+      - ttf-firacode-nerd
+      - ttf-font-awesome
+      - ttf-inconsolata

@@ -1,0 +1,71 @@
+---
+# Sysadmin stuff
+- name: Ensure basic firewalld configuration
+  block:
+    - name: Install the firewalld service
+      community.general.pacman:
+        name:
+          - firewalld
+        extra_args: --noconfirm
+        update_cache: yes
+
+      become: true
+    - name: Enable and start the firewalld service
+      ansible.builtin.systemd:
+        name: firewalld
+        enabled: yes
+        state: started
+    - name: Ensure nftables is disabled
+      ansible.builtin.systemd:
+        name: nftables
+        enabled: no
+        masked: yes
+        state: stopped
+    - name: Ensure iptables is disabled
+      ansible.builtin.systemd:
+        name: iptables
+        enabled: no
+        masked: yes
+        state: stopped
+    - name: permit traffic in default zone for various services
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: yes
+        state: enabled
+      loop:
+        - ssh
+      notify: reload firewalld
+
+    # - name: remove traffic in default zone for various services
+    #   ansible.posix.firewalld:
+    #     service: "{{ item }}"
+    #     permanent: yes
+    #     state: disabled
+    #   loop:
+    #     - smtp
+    #   notify: reload firewalld
+
+    - name: permit traffic in public zone for various services
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: yes
+        state: enabled
+      loop:
+        - openvpn
+      notify: reload firewalld
+
+# - name: install and update admin-type packages
+#   aur:
+#     name:
+#       - a2ps
+#       - acpi
+#       - alacritty
+#       - bind
+#       - bash-completion
+#       - btrfs-progs
+#       - emacs
+#       - git
+#       - gnupg
+#       - rsync
+#       - syncthing
+#       - tailscale

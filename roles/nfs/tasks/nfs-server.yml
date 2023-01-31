@@ -1,0 +1,46 @@
+---
+- name: printit
+  ansible.builtin.debug:
+    msg: "nfs-utils: {{ nfslist }}"
+
+- name: Install NFS utils
+  kewlfft.aur.aur:
+    name:
+      - nfs-utils
+
+- name: permit traffic in public zone for various services
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  loop:
+    - nfs
+    - mountd
+    - rpc-bind
+  notify: reload firewalld
+
+- name: Restart rpcbind
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: rpcbind
+
+- name: Restart nfs-server
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: nfs-server
+
+- name: Restart nfs-idmapd
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: nfs-idmapd
+
+- name: Add mappings to /etc/exports
+  ansible.builtin.blockinfile:
+    path: /etc/exports
+    block: |
+     {{ item.value['export_path'] }} {{ ip_start }}.{{ ip_netw }}/{{ ip_cidr }}(rw,sync,no_root_squash,no_all_squash,no_subtree_check)
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.key }}"
+  loop: "{{ nfslist }}"

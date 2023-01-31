@@ -9,3 +9,4 @@ ipa:
     primary: true
 
 boottype: efi
+nfs_type: server

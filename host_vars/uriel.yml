@@ -10,5 +10,5 @@ ipa:
     style: static
 
 config_roles:
-  - basic
+  - pkgs_basic
   - pihole

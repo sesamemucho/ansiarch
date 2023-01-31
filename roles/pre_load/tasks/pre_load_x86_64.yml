@@ -248,6 +248,17 @@
     dest: "/mnt/etc/shadow"
     content: "root:$6$MxIBspl6qRe.Yrhl$elIyfIYY.IBz5c4fXrDebJsPBrOM6xqzWFz0PfWoxEEPqrOsuel3DYVlyfSFoBdti.dmEjUsssAa/wlGh4VyO1:14871::::::"
 
+- name: Ensure .ssh directory exists
+  ansible.builtin.file:
+    path: /mnt/root/.ssh
+    mode: 0700
+    state: directory
+
+- name: Copy ssh key file to root
+  ansible.builtin.copy:
+    src: "{{ ansible_ssh_private_key_file }}.pub"
+    dest: /mnt/root/.ssh/authorized_keys
+
 - name: Setup boot
   import_tasks: boot.yml
 

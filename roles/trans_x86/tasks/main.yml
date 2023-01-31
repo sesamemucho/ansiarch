@@ -1,90 +1,101 @@
 ---
-# - name: Copy netctl DHCP config
-#   ansible.builtin.template:
-#     src: "{{ item.value['type'] }}-config.j2"
-#     dest: "/etc/netctl/{{ item.key }}"
+- name: Nope, not here anymore
+  ansible.builtin.debug:
+    msg: "trans target is not relevant for x86_64"
+
+# After having worked through pre-load for x86_64, I realize that
+# trans_rpi probably isn't needed either - Not right, I think it's
+# still needed if we are using static IP addresses (as in uriel). Once
+# a DNS/DHCP server is up, though, I don't think any DHCP NICs need
+# the trans target - just change name and reboot.
+
+
+# # - name: Copy netctl DHCP config
+# #   ansible.builtin.template:
+# #     src: "{{ item.value['type'] }}-config.j2"
+# #     dest: "/etc/netctl/{{ item.key }}"
+# #   loop: "{{ niclist }}"
+# #   when: item.value['style'] == "dhcp"
+
+# # - name: Copy netctl static config
+# #   ansible.builtin.template:
+# #     src: "{{ item.value['type'] }}-static-config.j2"
+# #     dest: "/etc/netctl/{{ item.key }}"
+# #   loop: "{{ niclist }}"
+# #   when: item.value['style'] == "static"
+
+# - name: Print the value
+#   shell: |
+#     /usr/bin/getent hosts gabriel | /usr/bin/awk '{print $1}' 
+#   register: connected_ip
+#   delegate_to: localhost
+
+# - name: set fact
+#   set_fact:
+#     conn_ip: "{{ connected_ip.stdout }}"
+
+# - name: More see 0
+#   ansible.builtin.debug:
+#     msg: "gabriel: conn_ip is {{ conn_ip }} For interface {{ item }}:  {{ hostvars['gabriel']['ansible_' + item] }}"
+#   loop: "{{ ansible_interfaces }}"
+
+# - name: More see
+#   ansible.builtin.debug:
+#     msg: "gabriel: Found interface {{ item }}: {{ hostvars['gabriel']['ansible_' + item] }}"
+#   loop: "{{ ansible_interfaces }}"
+#   # Which interface on gabriel has the address at which the ansible host has connected?
+#   when: hostvars['gabriel']['ansible_' + item]['active'] and (hostvars['gabriel']['ansible_' + item]['ipv4']['address'] == conn_ip)
+
+# - name: Set connected interface, type, and style
+#   ansible.builtin.set_fact:
+#     conn_interface: "{{ item }}"
+#     conn_type: "{{ hostvars[my_host]['ipa'][item]['type'] }}"
+#     conn_style: "{{ hostvars[my_host]['ipa'][item]['style'] }}"
+#   loop: "{{ ansible_interfaces }}"
+#   # Which interface on gabriel has the address at which the ansible host has connected?
+#   when: hostvars['gabriel']['ansible_' + item]['active'] and (hostvars['gabriel']['ansible_' + item]['ipv4']['address'] == conn_ip)
+
+# - name: Start current NIC
+#   ansible.builtin.shell: |
+#     /usr/bin/netctl stop "{{ conn_type }}"
+#     /usr/bin/netctl disable "{{ conn_type }}"
+#     /usr/bin/netctl enable "{{ conn_interface }}"
+#     /usr/bin/netctl start "{{ conn_interface }}"
+#   async: 100
+#   poll: 0
+
+# - name: Show name
+#   ansible.builtin.debug:
+#     msg: 'my_host is: {{ my_host }} domain is {{ domain }} conn_style is {{ conn_style }}'
+
+# - name: Set hostname
+#   ansible.builtin.hostname:
+#     name: "{{ my_host }}.{{ domain }}"
+#     use: systemd
+
+# - name: Change ansible name for this host
+#   ansible.builtin.set_fact:
+#     ansible_ssh_host: "{{ my_host }}"
+#   when: my_host != "uriel"
+
+# - name: Change ansible IP address for this host
+#   ansible.builtin.set_fact:
+#     ansible_ssh_host: "{{ ip_start }}.{{ hostvars[my_host]['ipa'][conn_interface]['ip'] }}"
+#   when: conn_style == 'static'
+
+# - name: Wait for host to come back
+#   local_action:
+#     module: ansible.builtin.wait_for_connection
+#     delay: 30
+#     timeout: 180
+
+# - name: Start secondary networks
+#   ansible.builtin.shell: |
+#     /usr/bin/netctl stop "{{ item.value['type'] }}"
+#     /usr/bin/netctl disable "{{ item.value['type'] }}"
+#     /usr/bin/netctl enable "{{ item.key }}"
+#     /usr/bin/netctl start "{{ item.key }}"
+#   async: 100
+#   poll: 0
 #   loop: "{{ niclist }}"
-#   when: item.value['style'] == "dhcp"
-
-# - name: Copy netctl static config
-#   ansible.builtin.template:
-#     src: "{{ item.value['type'] }}-static-config.j2"
-#     dest: "/etc/netctl/{{ item.key }}"
-#   loop: "{{ niclist }}"
-#   when: item.value['style'] == "static"
-
-- name: Print the value
-  shell: |
-    /usr/bin/getent hosts gabriel | /usr/bin/awk '{print $1}' 
-  register: connected_ip
-  delegate_to: localhost
-
-- name: set fact
-  set_fact:
-    conn_ip: "{{ connected_ip.stdout }}"
-
-- name: More see 0
-  ansible.builtin.debug:
-    msg: "gabriel: conn_ip is {{ conn_ip }} For interface {{ item }}:  {{ hostvars['gabriel']['ansible_' + item] }}"
-  loop: "{{ ansible_interfaces }}"
-
-- name: More see
-  ansible.builtin.debug:
-    msg: "gabriel: Found interface {{ item }}: {{ hostvars['gabriel']['ansible_' + item] }}"
-  loop: "{{ ansible_interfaces }}"
-  # Which interface on gabriel has the address at which the ansible host has connected?
-  when: hostvars['gabriel']['ansible_' + item]['active'] and (hostvars['gabriel']['ansible_' + item]['ipv4']['address'] == conn_ip)
-
-- name: Set connected interface, type, and style
-  ansible.builtin.set_fact:
-    conn_interface: "{{ item }}"
-    conn_type: "{{ hostvars[my_host]['ipa'][item]['type'] }}"
-    conn_style: "{{ hostvars[my_host]['ipa'][item]['style'] }}"
-  loop: "{{ ansible_interfaces }}"
-  # Which interface on gabriel has the address at which the ansible host has connected?
-  when: hostvars['gabriel']['ansible_' + item]['active'] and (hostvars['gabriel']['ansible_' + item]['ipv4']['address'] == conn_ip)
-
-- name: Start current NIC
-  ansible.builtin.shell: |
-    /usr/bin/netctl stop "{{ conn_type }}"
-    /usr/bin/netctl disable "{{ conn_type }}"
-    /usr/bin/netctl enable "{{ conn_interface }}"
-    /usr/bin/netctl start "{{ conn_interface }}"
-  async: 100
-  poll: 0
-
-- name: Show name
-  ansible.builtin.debug:
-    msg: 'my_host is: {{ my_host }} domain is {{ domain }} conn_style is {{ conn_style }}'
-
-- name: Set hostname
-  ansible.builtin.hostname:
-    name: "{{ my_host }}.{{ domain }}"
-    use: systemd
-
-- name: Change ansible name for this host
-  ansible.builtin.set_fact:
-    ansible_ssh_host: "{{ my_host }}"
-  when: my_host != "uriel"
-
-- name: Change ansible IP address for this host
-  ansible.builtin.set_fact:
-    ansible_ssh_host: "{{ ip_start }}.{{ hostvars[my_host]['ipa'][conn_interface]['ip'] }}"
-  when: conn_style == 'static'
-
-- name: Wait for host to come back
-  local_action:
-    module: ansible.builtin.wait_for_connection
-    delay: 30
-    timeout: 180
-
-- name: Start secondary networks
-  ansible.builtin.shell: |
-    /usr/bin/netctl stop "{{ item.value['type'] }}"
-    /usr/bin/netctl disable "{{ item.value['type'] }}"
-    /usr/bin/netctl enable "{{ item.key }}"
-    /usr/bin/netctl start "{{ item.key }}"
-  async: 100
-  poll: 0
-  loop: "{{ niclist }}"
-  when: item != conn_interface
+#   when: item != conn_interface

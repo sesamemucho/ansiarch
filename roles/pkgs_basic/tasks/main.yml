@@ -1,0 +1,31 @@
+---
+# Stuff that all Arch Linux installations need.
+- name: Initialize pacman keys
+  ansible.builtin.command:
+    cmd: pacman-key --init
+
+- name: Update pacman keys
+  ansible.builtin.command:
+    cmd: pacman-key --populate
+
+- name: Make sure package updating is ready
+  kewlfft.aur.aur:
+    upgrade: yes
+
+- name: install and update basic packages
+  kewlfft.aur.aur:
+    name:
+      - a2ps
+      - acpi
+      - alacritty
+      - bind
+      - bash-completion
+      - btrfs-progs
+      - emacs
+      - git
+      - gnupg
+      - man
+      - rsync
+      - starship
+      - syncthing
+      - tailscale
