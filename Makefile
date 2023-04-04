@@ -27,15 +27,15 @@ rpi-test:
 	  fi; \
 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=gabriel aa_host=$(HOST)" rpi-test.yml
 
-trans:
-	@ set -e; \
-	  if [[ $(HOST) == 'unset' ]]; \
-	  then \
-	    echo "HOST must be set on the command line:"; \
-	    echo "make HOST=myhost load"; \
-	    exit; \
-	  fi; \
-	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=gabriel aa_host=$(HOST)" trans.yml
+# trans:
+# 	@ set -e; \
+# 	  if [[ $(HOST) == 'unset' ]]; \
+# 	  then \
+# 	    echo "HOST must be set on the command line:"; \
+# 	    echo "make HOST=myhost load"; \
+# 	    exit; \
+# 	  fi; \
+# 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=gabriel aa_host=$(HOST)" trans.yml
 
 load:
 	@ set -e; \
@@ -45,7 +45,7 @@ load:
 	    echo "make HOST=myhost load"; \
 	    exit; \
 	  fi; \
-	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) load.yml
+	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="aa_host=$(HOST)" -l gabriel load.yml
 
 configure:
 	@ set -e; \
@@ -63,8 +63,8 @@ configure:
 define make_host
 .PHONY: $(1)
 $(1):
-	make DEBUG_FLAG=$(DEBUG_FLAG) HOST=$(1) trans
 	make DEBUG_FLAG=$(DEBUG_FLAG) HOST=$(1) load
+	make DEBUG_FLAG=$(DEBUG_FLAG) HOST=$(1) configure
 endef
 
 $(foreach host,$(hosts),$(eval $(call make_host,$(host))))

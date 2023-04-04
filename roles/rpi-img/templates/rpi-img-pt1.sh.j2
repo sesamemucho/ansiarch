@@ -12,6 +12,7 @@ size=      409600, type=c
 EOF
 
 partprobe $loopdev
+losetup -d $loopdev
 
 loopdev=$(losetup -P --show -f {{ rpi_image_name }})
 
@@ -24,3 +25,7 @@ mount ${loopdev}p1 {{ rpi_mount_point }}/boot
 
 echo "Copying ArchLinux image to image file"
 tar xpf "{{ rpi_arch_tgz }}" -C {{ rpi_mount_point }}
+
+echo "Extracting files from new e2fsprogs: " $(pwd)
+tar --xz -C {{ rpi_mount_point }} -xf roles/rpi-img/files/e2fsprogs-1.47.0-1-armv7h.pkg.tar.xz 
+# Leave everything mounted for further ansible work.

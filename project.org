@@ -4,6 +4,9 @@
 #+title: ansible-archlinux
 #+filetags: :project:
 
+* Project name: arcot
+
+Doesn't stand for anything, just a nod to an old science fiction character.
 
 * Todo
 
@@ -42,6 +45,19 @@ wait for reboot, then look for the host's address (wired or wireless)
 Run second stage load
 
 * Design thoughts
+
+** Current thoughts
+[2023-02-13 Mon]
+To bring things up from the very beginning - that is, before the arcot
+DHCP server is available, whatever DHCP server is running should
+recognize 'gabriel' and 'uriel'.
+`gabriel` is the name of the initial archiso hostname (the changing
+trickster). Every new machine starts out with this name. The other is
+'uriel', the arcot DHCP server.
+
+
+
+
 
 ** Keep the install command simple
 What I'd like to be able to do is to boot up a machine with a

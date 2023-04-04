@@ -1,7 +1,18 @@
 ---
+- name: What image file?
+  ansible.builtin.debug:
+    msg: "Building from image file {{ rpi_arch_tgz }}"
+
+#    "{{ lookup('files', 'rpi-img-pt1.sh') }}"
+
 - name: Create new RPI image file
-  ansible.builtin.shell:
-    cmd: "{{ lookup('template', 'rpi-img-pt1.sh.j2') }}"
+  ansible.builtin.script: >
+    rpi-img-pt1.sh
+    "{{ rpi_image_name }}"
+    "{{ rpi_image_size }}"
+    "{{ rpi_mount_point }}"
+    "{{ rpi_arch_tgz }}"
+
   register: rpi_image_result
 
 - name: Set RPI initial host name

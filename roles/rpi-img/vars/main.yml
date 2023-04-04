@@ -2,4 +2,5 @@
 rpi_image_size: "14GiB"
 rpi_image_name: "/data/rpi-img/base-rpi.img"
 rpi_arch_tgz:   "/data/big/ArchLinuxARM-rpi-armv7-latest.tar.gz"
+#rpi_arch_tgz:   "/data/big/ArchLinuxARM-rpi-aarch64-latest.tar.gz"
 rpi_mount_point: "/mnt"

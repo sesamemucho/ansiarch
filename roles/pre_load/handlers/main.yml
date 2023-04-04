@@ -1,9 +1,0 @@
----
-- name: Update mkinitcpio
-  ansible.builtin.command: arch-chroot /mnt mkinitcpio -p linux
-  tags:
-    - initramfs
-    - mkinitcpio
-
-- name: Update grubs
-  import_tasks: grub.yml

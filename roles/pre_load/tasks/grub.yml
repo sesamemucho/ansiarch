@@ -1,6 +1,0 @@
----
- - name: Reinstall grub
-   ansible.builtin.command: arch-chroot /mnt /usr/bin/grub-install --target i386-pc --recheck "{{ my_host_vars['install_drive'] }}"
-
- - name: Update grub configuration
-   ansible.builtin.command: arch-chroot /mnt /usr/bin/grub-mkconfig -o /boot/grub/grub.cfg
