@@ -4,12 +4,11 @@ KEYFILE := ./files/ansible_archlinux
 HOST ?= unset
 hosts := $(patsubst host_vars/%.yml,%,$(wildcard host_vars/*.yml))
 
-latest_archiso := $(shell ls archlinux-*.iso | sort | tail -1)
 gen:
 	ansible-galaxy install -r requirements.yml
 
 run:
-	run_archiso -d -i $(latest_archiso)
+	run_archiso -d -i $(shell ls archlinux-*.iso | sort | tail -1)
 
 archiso:
 	 ansible-playbook $(DEBUG_FLAG) -f 2 -i inventory.yml archiso-img.yml |& tee archiso.log
@@ -26,6 +25,16 @@ rpi-test:
 	    exit; \
 	  fi; \
 	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=gabriel aa_host=$(HOST)" rpi-test.yml
+
+x86-test:
+	@ set -e; \
+	  if [[ $(HOST) == 'unset' ]]; \
+	  then \
+	    echo "HOST must be set on the command line:"; \
+	    echo "make HOST=myhost load"; \
+	    exit; \
+	  fi; \
+	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="base_host=gabriel aa_host=$(HOST)" x86-test.yml
 
 # trans:
 # 	@ set -e; \

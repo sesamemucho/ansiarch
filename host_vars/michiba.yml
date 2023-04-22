@@ -9,4 +9,13 @@ ipa:
     primary: true
 
 boottype: efi
+
+config_roles:
+  - pkgs_basic
+  - pkgs_admin
+  - nfs
+  - desktop
+  - pkgs_dev
+  - dotfiles
+
 nfs_type: server

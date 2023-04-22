@@ -25,6 +25,7 @@
       - git
       - gnupg
       - man
+      - restic
       - rsync
       - starship
       - syncthing

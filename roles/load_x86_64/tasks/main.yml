@@ -1,4 +1,12 @@
 ---
+- name: x86_64 preload stuff for BIOS
+  include_tasks: preload-bios.yml
+  when boottype == "bios"
+
+- name: x86_64 preload stuff for EFI
+  include_tasks: preload-efi.yml
+  when boottype == "efi"
+
 - name: Create user group
   ansible.builtin.group:
     name: "{{ user_name }}"
@@ -45,6 +53,12 @@
     content: '%wheel ALL=(ALL) NOPASSWD: ALL'
     dest: /etc/sudoers.d/wheel
     validate: /usr/sbin/visudo --check --file=%s
+
+- name: Setup for pacman
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - pacman-key --init
+    - pacman-key --populate
 
 - name: Update packages
   community.general.pacman:
