@@ -48,12 +48,6 @@
     - chmod 0600 /home/{{ user_name }}/.ssh/authorized_keys
     - chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh/authorized_keys
 
-- name: Give passwordless sudo access to wheel group
-  copy:
-    content: '%wheel ALL=(ALL) NOPASSWD: ALL'
-    dest: /etc/sudoers.d/wheel
-    validate: /usr/sbin/visudo --check --file=%s
-
 - name: Setup for pacman
   ansible.builtin.command: "{{ item }}"
   loop:
