@@ -21,7 +21,6 @@
       - bind
       - bash-completion
       - btrfs-progs
-      - emacs
       - git
       - gnupg
       - man
@@ -30,3 +29,19 @@
       - starship
       - syncthing
       - tailscale
+
+- name: For emacs, install and update basic packages
+  kewlfft.aur.aur:
+    name:
+      - emacs
+      - ttf-dejavu
+      - ttf-fira-code
+      - aspell
+      - aspell-en
+
+# Thinking about
+   # - interception-tools
+   # - interception-dual-function-keys
+   # systemctl enable --now udevmon
+   # from:
+   #   https://emacsredux.com/blog/2020/07/05/remap-enter-to-control-in-gnu-linux-2020-edition/
