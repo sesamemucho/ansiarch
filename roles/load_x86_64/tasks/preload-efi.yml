@@ -1,11 +1,11 @@
 ---
 - name: Abort if the host is not booted from the Arch install media
-  fail:
+  ansible.builtin.fail:
     msg: "This host is not booted from the Arch install media!"
-  when: ansible_nodename != 'archiso'
+  when: ansible_nodename != 'gabriel'
 
-- name: Synchronize clock via NTP
-  ansible.builtin.command: timedatectl set-ntp true
+# - name: Synchronize clock via NTP
+#   ansible.builtin.command: timedatectl set-ntp true
 
 - name: Repartition install drive
   block:
@@ -32,32 +32,6 @@
         # flags: [lvm]
         state: present
 
-# - name: Setup LVM root and tmp volumes
-#   block:
-#     - name: Remove existing volume group
-#       lvg:
-#         vg: VolumeGroup00
-#         force: yes
-#         state: absent
-#     - name: Configure volume group
-#       lvg:
-#         vg: VolumeGroup00
-#         pvs:
-#           - '{{ install_drive }}{{ root_partition_suffix }}'
-#     - name: Configure logical volumes
-#       lvol:
-#         vg: VolumeGroup00
-#         lv: '{{ item.lv }}'
-#         size: '{{ item.size }}'
-#       loop:
-#         - {lv: tmp, size: 512m}
-#         - {lv: root, size: "100%FREE"}
-#     # - name: Get UUID for root volume
-#     #   command: blkid -s UUID -o value /dev/mapper/VolumeGroup00-root
-#     #   register: root_luks_uuid
-#     #   changed_when: false
-#   tags:
-#     - lvm
 - name: Setup LUKS encryption key
   ansible.builtin.copy:
     src: '{{ luks_keyfile }}'
@@ -66,11 +40,11 @@
 - name: Setup LUKS encryption for root filesystem
   block:
     - name: Destroy existing LUKS volume
-      luks_device:
+      community.crypto.luks_device:
         device: '{{ install_drive }}{{ root_partition_suffix }}'
         state: absent
     - name: Create and open LUKS volume
-      luks_device:
+      community.crypto.luks_device:
         device: '{{ install_drive }}{{ root_partition_suffix }}'
         keyfile: /root/keyfile
         name: root
@@ -79,39 +53,31 @@
 - name: Create filesystems
   block:
     - name: Create FAT32 filesystem in boot partition
-      filesystem:
+      ansible.builtin.filesystem:
         dev: '{{ install_drive }}{{ boot_partition_suffix }}'
         fstype: vfat
         opts: -F32
         force: yes
-    - name: Create btrfs filesystem in root volume
-      filesystem:
-        dev: '{{ install_drive }}{{ root_partition_suffix }}'
-        fstype: btrfs
+    - name: Create filesystem in root volume
+      ansible.builtin.filesystem:
+        dev: /dev/mapper/root
+        fstype: '{{ root_filesystem }}'
         force: yes
-   # - name: Get UUID for boot filesystem
-   #   command: blkid -s UUID -o value '{{ install_drive }}{{ boot_partition_suffix }}'
-   #   register: boot_uuid
-   #   changed_when: false
-   # - name: Get UUID for root filesystem
-   #   command: blkid -s UUID -o value /dev/mapper/VolumeGroup00-root
-   #   register: root_uuid
-   #   changed_when: false
 
 - name: Mount filesystems
   block:
     - name: Mount root filesystem
-      mount:
+      ansible.builtin.mount:
         path: /mnt
         src: /dev/mapper/root
-        fstype: ext4
+        fstype: '{{ root_filesystem }}'
         state: mounted
     - name: Create mountpoint for boot volume
-      file:
+      ansible.builtin.file:
         path: /mnt/boot
         state: directory
     - name: Mount boot filesystem
-      mount:
+      ansible.builtin.mount:
         path: /mnt/boot
         src: '{{ install_drive }}{{ boot_partition_suffix }}'
         fstype: vfat
@@ -120,45 +86,37 @@
 - name: Rank Arch mirrors
   block:
     - name: Install the reflector package (for rankmirrors)
-      pacman:
+      community.general.pacman:
         name:
           - reflector
         update_cache: yes
     - name: filter the fastest mirrors that support HTTPS
- #          shell: reflector --verbose --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
-      shell: reflector --verbose --latest 10 --sort rate | awk -e '! /rsync/ {print}' > /etc/pacman.d/mirrorlist
+      ansible.builtin.shell: reflector --verbose --latest 10 --sort rate | awk -e '! /rsync/ {print}' > /etc/pacman.d/mirrorlist
+
+- name: Setup pacman keys
+  ansible.builtin.command: pacman-key --init
+
+- name: Populate pacman keys
+  ansible.builtin.command: pacman-key --populate
 
 - name: Run pacstrap
-  command: pacstrap /mnt base btrfs-progs dhclient dhcpcd efibootmgr grub linux linux-firmware netctl openssh python sudo ansible git sshpass rsync vim wpa_supplicant
-
-# - name: Run pacstrap
-#   command: pacstrap /mnt base networkmanager
-#   tags:
-#     - pacstrap1
-
-# - name: Enable services
-#   ansible.builtin.systemd:
-#     name: NetworkManager
-#     enabled: yes
-#     state: stopped
-#   tags:
-#     - pacstrap2
+  ansible.builtin.command: pacstrap /mnt base btrfs-progs dhclient dhcpcd efibootmgr grub linux linux-firmware netctl openssh python sudo ansible git sshpass rsync vim wpa_supplicant
 
 - name: Generate fstab
   block:
     - name: Generate blank fstab
-      command: genfstab -U /mnt >> /mnt/etc/fstab
+      ansible.builtin.command: genfstab -U /mnt >> /mnt/etc/fstab
     - name: Add root volume to fstab
-      mount:
+      ansible.builtin.mount:
         fstab: /mnt/etc/fstab
         path: /
         src: /dev/mapper/root
-        fstype: ext4
+        fstype: '{{ root_filesystem }}'
         opts: defaults
         passno: '0'
         state: present
     - name: Add boot volume to fstab
-      mount:
+      ansible.builtin.mount:
         fstab: /mnt/etc/fstab
         path: /boot
         src: '{{ install_drive }}{{ boot_partition_suffix }}'
@@ -166,35 +124,17 @@
         opts: defaults
         passno: '2'
         state: present
-    # - name: Add tmp volume to fstab
-    #   mount:
-    #     fstab: /mnt/etc/fstab
-    #     path: /tmp
-    #     src: /dev/mapper/tmp
-    #     fstype: tmpfs
-    #     opts: defaults
-    #     state: present
 
-# - name: Add tmp volume to crypttab
-#   crypttab:
-#     path: /mnt/etc/crypttab
-#     backing_device: /dev/VolumeGroup00-tmp
-#     name: tmp
-#     password: /dev/urandom
-#     opts: tmp,cipher=aes-xts-plain64,size=512
-#     state: present
-#   tags:
-#     - crypttab
 - name: Set local timezone
-  command: arch-chroot /mnt ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
+  ansible.builtin.command: arch-chroot /mnt ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
 
 - name: Generate adjtime file
-  command: arch-chroot /mnt hwclock --systohc
+  ansible.builtin.command: arch-chroot /mnt hwclock --systohc
 
 - name: Setup locales
   block:
     - name: Configure locale.gen
-      lineinfile:
+      ansible.builtin.lineinfile:
         dest: /mnt/etc/locale.gen
         regexp: '{{ item.regex }}'
         line: '{{ item.line }}'
@@ -202,36 +142,33 @@
         - {regex: en_US\.UTF-8 UTF-8, line: en_US.UTF-8 UTF-8}
         - {regex: en_US ISO-8859-1, line: en_US ISO-8859-1}
     - name: Create locale.conf
-      copy:
+      ansible.builtin.copy:
         content: "LANG=en_US.UTF-8"
         dest: /mnt/etc/locale.conf
     - name: Generate locales
-      command: arch-chroot /mnt locale-gen
+      ansible.builtin.command: arch-chroot /mnt locale-gen
 
-# - name: Set hostname
-#   ansible.builtin.copy:
-#     content: '{{ inventory_hostname }}'
-#     dest: /mnt/etc/hostname
+- name: Set hostname
+  ansible.builtin.copy:
+    content: '{{ aa_host }}'
+    dest: /mnt/etc/hostname
 
-# - name: Setup netctl
-#  block:
-#    - name: Create netctl profile for wired connection
-#      copy:
-#        content: |
-#          Description='Wired with DHCP'
-#          Interface={{ wired_interface }}
-#          Connection=ethernet
-#          IP=dhcp
-#          IP6=dhcp-noaddr
-#          # IPv6 traffic is tunneled over IPv4, which eats 20 bytes of the MTU.
-#          ExecUpPost='/usr/bin/ip link set {{ wired_interface }} mtu 1480'
-#        dest: /mnt/etc/netctl/wired
-#    - name: Enable wired netctl profile
-#      command: arch-chroot /mnt netctl enable wired
-#  tags:
-#    - netctl
 - name: Enable sshd
   ansible.builtin.command: arch-chroot /mnt systemctl enable sshd
+
+# We are sending the local hostname to the DHCP server, and not
+# requesting one from it
+- name: Don't request hostname from DHCP server
+  ansible.builtin.lineinfile:
+    path: /mnt/etc/dhcpcd.conf
+    regexp: '^option host_name'
+    line: '#option host_name'
+
+- name: Send hostname to DHCP server
+  ansible.builtin.lineinfile:
+    path: /mnt/etc/dhcpcd.conf
+    regexp: '^#hostname'
+    line: 'hostname'
 
 - name: Set up initramfs
   block:
@@ -244,23 +181,23 @@
         mode: 0644
 
     - name: Add mkinitcpio.conf hooks
-      lineinfile:
+      ansible.builtin.lineinfile:
         dest: /mnt/etc/mkinitcpio.conf
         regexp: ^HOOKS=
         line: HOOKS=(base udev systemd keyboard keymap sd-vconsole block sd-encrypt autodetect modconf filesystems fsck)
     - name: Create new initramfs
-      command: arch-chroot /mnt mkinitcpio -p linux
+      ansible.builtin.command: arch-chroot /mnt mkinitcpio -p linux
 
 - name: Set up systemd-boot
   block:
 
     - name: Create directory for EFI configuration files
-      file:
+      ansible.builtin.file:
         path: /mnt/boot/loader/entries
         state: directory
 
     - name: Get UUID for root LUKS volume
-      command: blkid -s UUID -o value '{{ install_drive }}{{ root_partition_suffix }}'
+      ansible.builtin.command: blkid -s UUID -o value '{{ install_drive }}{{ root_partition_suffix }}'
       register: root_luks_uuid
       changed_when: false
 
@@ -288,30 +225,47 @@
     root_dev: /dev/mapper/root
 
 - name: Initialize systemd-boot
-  ansible.builtin.command: arch-chroot /mnt bootctl --path=/boot install
+  block:
+    - name: Update systemd-boot
+      ansible.builtin.command: arch-chroot /mnt bootctl --path=/boot install
 
 - name: Setup user account
   block:
     - name: Create user account
-      command: arch-chroot /mnt useradd --create-home --user-group --groups wheel {{ user_name }} --password {{ user_password }}
+      ansible.builtin.command:
+        argv:
+          - arch-chroot
+          - /mnt
+          - useradd
+          - --create-home
+          - --user-group
+          - --groups
+          - wheel
+          - "{{ user_name }}"
+          - --password
+          - "$6$ZE1BMAFT8ZDT7aTV$fUc4cWfabmbD7lUSg6R5QmV3R/qxQHS18kyQFiDfJmksSP4winHAoZCoE7GEGo4YD9lgk.OnzqjorvnlDjuYT0"
+
+    - name: Expire password (require new password on first use)
+      ansible.builtin.command: arch-chroot /mnt chage -d 0 "{{ user_name }}"
+
     - name: Create user's ssh directory
-      file:
+      ansible.builtin.file:
         path: /mnt/home/{{ user_name }}/.ssh
         state: directory
     - name: Set mode, owner, and group on user's ssh directory
-      command: arch-chroot /mnt {{ item }}
+      ansible.builtin.command: arch-chroot /mnt {{ item }}
       loop:
         - chmod 0700 /home/{{ user_name }}/.ssh
         - chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh
     - name: Copy over ssh keys from current Ansible controller as an authorized key
-      copy:
+      ansible.builtin.copy:
         src: '{{ lookup("env", "HOME") }}/.ssh/'
         dest: '/mnt/home/{{ user_name }}/.ssh/'
-    - name: Set mode, owner, and group on user's authorized_key file
-      command: arch-chroot /mnt {{ item }}
+    - name: Set mode, owner, and group on all user's .ssh files
+      ansible.builtin.command: arch-chroot /mnt {{ item }}
       loop:
         - chmod 0600 /home/{{ user_name }}/.ssh/authorized_keys
-        - chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh/authorized_keys
+        - chown -R {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh
 
 - name: Give passwordless sudo access to wheel group
   ansible.builtin.copy:
@@ -319,8 +273,67 @@
     dest: /mnt/etc/sudoers.d/wheel
     validate: /usr/sbin/visudo --check --file=%s
 
-# - name: Reboot
-#   reboot:
-#     connect_timeout: 1
-#     reboot_timeout: 1
-#     failed_when: false
+- name: Copy netctl DHCP config
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}-config.j2"
+    dest: "/mnt/etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: item.value['style'] == "dhcp"
+
+- name: Copy netctl static config
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}-static-config.j2"
+    dest: "/mnt/etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: item.value['style'] == "static"
+
+- name: Enable netctl configs
+  ansible.builtin.command: arch-chroot /mnt /usr/bin/netctl enable "{{ item.key }}"
+  loop: "{{ niclist }}"
+
+- name: Set up for ansible ssh
+  ansible.builtin.command: cp -p /root/.ssh/authorized_keys /mnt/root/.ssh/
+
+# - name: Setup netctl
+#   block:
+#     - name: Create netctl profile for wired connection
+#       copy:
+#         content: |
+#           Description='Wired with DHCP'
+#           Interface={{ wired_interface }}
+#           Connection=ethernet
+#           IP=dhcp
+#           IP6=dhcp-noaddr
+#           # IPv6 traffic is tunneled over IPv4, which eats 20 bytes of the MTU.
+#           ExecUpPost='/usr/bin/ip link set {{ wired_interface }} mtu 1480'
+#         dest: /mnt/etc/netctl/wired
+
+#     - name: Enable wired netctl profile
+#       command: arch-chroot /mnt netctl enable wired
+
+# - name: Setup netctl wireless
+#   block:
+#     - name: Create netctl profile for wireless connection
+#       copy:
+#         content: |
+#           Description='Wireless with DHCP'
+#           Interface={{ wireless_interface }}
+#           Connection=wireless
+#           IP=dhcp
+#           Security=wpa
+#           ESSID='{{ wireless_ssid }}'
+#           Key='{{ wireless_key }}'
+#         dest: /mnt/etc/netctl/wireless
+
+#     - name: Enable wireless netctl profile
+#       command: arch-chroot /mnt netctl enable wireless
+
+# Loop on niclist
+# when type == wireless
+# when type == wired
+
+- name: Reboot
+  ansible.builtin.command: /sbin/shutdown -r +1
+  async: 0
+  poll: 0
+  ignore_errors: true

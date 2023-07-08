@@ -73,6 +73,7 @@ define make_host
 .PHONY: $(1)
 $(1):
 	make DEBUG_FLAG=$(DEBUG_FLAG) HOST=$(1) load
+	@read -p "Press Enter to continue"
 	make DEBUG_FLAG=$(DEBUG_FLAG) HOST=$(1) configure
 endef
 

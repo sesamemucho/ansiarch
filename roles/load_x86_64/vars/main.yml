@@ -2,3 +2,7 @@
 pacstrap_extras:
   bios: 'gptfdisk syslinux'
   efi:  'efibootmgr'
+
+my_host: "{{ aa_host }}"
+niclist: "{{ hostvars[my_host]['ipa']|dict2items }}"
+my_boottype: "{{ hostvars[my_host]['boottype'] }}"

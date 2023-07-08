@@ -1,105 +1,105 @@
 ---
 - name: x86_64 preload stuff for BIOS
   include_tasks: preload-bios.yml
-  when boottype == "bios"
+  when: my_boottype == "bios"
 
 - name: x86_64 preload stuff for EFI
   include_tasks: preload-efi.yml
-  when boottype == "efi"
+  when: my_boottype == "efi"
 
-- name: Create user group
-  ansible.builtin.group:
-    name: "{{ user_name }}"
+# - name: Create user group
+#   ansible.builtin.group:
+#     name: "{{ user_name }}"
 
-- name: Create user account
-  ansible.builtin.user:
-    name: "{{ user_name }}"
-    # password is "password"
-    password: "$6$ZE1BMAFT8ZDT7aTV$fUc4cWfabmbD7lUSg6R5QmV3R/qxQHS18kyQFiDfJmksSP4winHAoZCoE7GEGo4YD9lgk.OnzqjorvnlDjuYT0"
-    group: "{{ user_name }}"
-    groups: wheel
-    append: yes
-    create_home: yes
-    update_password: on_create
+# - name: Create user account
+#   ansible.builtin.user:
+#     name: "{{ user_name }}"
+#     # password is "password"
+#     password: "$6$ZE1BMAFT8ZDT7aTV$fUc4cWfabmbD7lUSg6R5QmV3R/qxQHS18kyQFiDfJmksSP4winHAoZCoE7GEGo4YD9lgk.OnzqjorvnlDjuYT0"
+#     group: "{{ user_name }}"
+#     groups: wheel
+#     append: yes
+#     create_home: yes
+#     update_password: on_create
 
-- name: Expire user's password
-  ansible.builtin.command:
-    passwd -e {{ user_name }}
+# - name: Expire user's password
+#   ansible.builtin.command:
+#     passwd -e {{ user_name }}
 
-- name: Create user's ssh directory
-  file:
-    path: /home/{{ user_name }}/.ssh
-    state: directory
+# - name: Create user's ssh directory
+#   file:
+#     path: /home/{{ user_name }}/.ssh
+#     state: directory
 
-- name: Set mode, owner, and group on user's ssh directory
-  command: "{{ item }}"
-  loop:
-    - chmod 0700 /home/{{ user_name }}/.ssh
-    - chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh
+# - name: Set mode, owner, and group on user's ssh directory
+#   command: "{{ item }}"
+#   loop:
+#     - chmod 0700 /home/{{ user_name }}/.ssh
+#     - chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh
 
-- name: Copy over ssh keys from current Ansible controller as an authorized key
-  copy:
-    src: '{{ lookup("env", "HOME") }}/.ssh/'
-    dest: '/home/{{ user_name }}/.ssh/'
+# - name: Copy over ssh keys from current Ansible controller as an authorized key
+#   copy:
+#     src: '{{ lookup("env", "HOME") }}/.ssh/'
+#     dest: '/home/{{ user_name }}/.ssh/'
 
-- name: Set mode, owner, and group on user's authorized_key file
-  command: "{{ item }}"
-  loop:
-    - chmod 0600 /home/{{ user_name }}/.ssh/authorized_keys
-    - chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh/authorized_keys
+# - name: Set mode, owner, and group on user's authorized_key file
+#   command: "{{ item }}"
+#   loop:
+#     - chmod 0600 /home/{{ user_name }}/.ssh/authorized_keys
+#     - chown {{ user_name }}:{{ user_name }} /home/{{ user_name }}/.ssh/authorized_keys
 
-- name: Give passwordless sudo access to wheel group
-  copy:
-    content: '%wheel ALL=(ALL) NOPASSWD: ALL'
-    dest: /etc/sudoers.d/wheel
-    validate: /usr/sbin/visudo --check --file=%s
+# - name: Give passwordless sudo access to wheel group
+#   copy:
+#     content: '%wheel ALL=(ALL) NOPASSWD: ALL'
+#     dest: /etc/sudoers.d/wheel
+#     validate: /usr/sbin/visudo --check --file=%s
 
-- name: Setup for pacman
-  ansible.builtin.command: "{{ item }}"
-  loop:
-    - pacman-key --init
-    - pacman-key --populate
+# - name: Setup for pacman
+#   ansible.builtin.command: "{{ item }}"
+#   loop:
+#     - pacman-key --init
+#     - pacman-key --populate
 
-- name: Update packages
-  community.general.pacman:
-    update_cache: true
-    upgrade: true
+# - name: Update packages
+#   community.general.pacman:
+#     update_cache: true
+#     upgrade: true
 
-- name: Install base-devel for AUR and other stuff
-  community.general.pacman:
-    name:
-      - base-devel
-    state: present
+# - name: Install base-devel for AUR and other stuff
+#   community.general.pacman:
+#     name:
+#       - base-devel
+#     state: present
 
-- name: Make AUR build user
-  ansible.builtin.user:
-    name: aur_builder
-    create_home: yes
-    group: wheel
+# - name: Make AUR build user
+#   ansible.builtin.user:
+#     name: aur_builder
+#     create_home: yes
+#     group: wheel
 
-- name: Set up remote_tmp dir
-  ansible.builtin.file:
-    path: /home/aur_builder/.ansible/tmp
-    state: directory
-    owner: aur_builder
-    group: wheel
-    mode: 0755
+# - name: Set up remote_tmp dir
+#   ansible.builtin.file:
+#     path: /home/aur_builder/.ansible/tmp
+#     state: directory
+#     owner: aur_builder
+#     group: wheel
+#     mode: 0755
 
-- name: sudo for aur_builder
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/11-install-aur-builder
-    line: 'aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman'
-    create: yes
-    validate: 'visudo -cf %s'
+# - name: sudo for aur_builder
+#   ansible.builtin.lineinfile:
+#     path: /etc/sudoers.d/11-install-aur-builder
+#     line: 'aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman'
+#     create: yes
+#     validate: 'visudo -cf %s'
 
-- name: AUR installs
-  block:
-    - name: get yay
-      kewlfft.aur.aur:
-        use: makepkg
-        name: yay
-      become: yes
-      become_user: aur_builder
+# - name: AUR installs
+#   block:
+#     - name: get yay
+#       kewlfft.aur.aur:
+#         use: makepkg
+#         name: yay
+#       become: yes
+#       become_user: aur_builder
 
 # - name: Print the value
 #   shell: |

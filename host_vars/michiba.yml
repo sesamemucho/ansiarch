@@ -2,20 +2,21 @@
 ipa:
   enp3s0:
     type: wired
-    ip: "155.105"
+    style: dhcp
   wlp2s0:
     type: wireless
-    ip: "155.165"
-    primary: true
+    style: dhcp
 
 boottype: efi
 
 config_roles:
   - pkgs_basic
-  - pkgs_admin
-  - nfs
-  - desktop
-  - pkgs_dev
+  # - pkgs_admin
+  # - nfs
+  # - desktop
+  # - pkgs_dev
+  - my_arch_pkgs
   - dotfiles
+  - emacs_config
 
 nfs_type: server

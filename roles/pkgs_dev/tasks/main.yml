@@ -1,6 +1,6 @@
 ---
 - name: Install dev packages
-  kewlfft.aur.aur:
+  community.general.pacman:
     name:
       - mlocate
       - texinfo
@@ -13,10 +13,19 @@
       - which
       - ispell
       - bind-tools
-      - python2
       - python
       - python-pipx
     update_cache: yes
+
+- name: Install dev packages from aur
+  kewlfft.aur.aur:
+    use: makepkg
+    name:
+      - python2
+    update_cache: yes
+    skip_pgp_check: yes
+  become: yes
+  become_user: aur_builder
 
 # - name: Python setup
 #   block:
@@ -32,7 +41,7 @@
 - name: VM setup
   block:
     - name: Install dev packages for VM work
-      kewlfft.aur.aur:
+      community.general.pacman:
         name:
           - vagrant
           - net-tools

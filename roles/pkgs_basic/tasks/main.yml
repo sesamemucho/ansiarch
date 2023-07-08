@@ -8,12 +8,63 @@
   ansible.builtin.command:
     cmd: pacman-key --populate
 
+- name: Update packages
+  community.general.pacman:
+    update_cache: true
+    upgrade: true
+
+  # See: https://github.com/ansible-collections/community.general/issues/6290
+- name: Install base-devel for AUR and other stuff 1a
+  community.general.pacman:
+    name:
+      - make
+      - fakeroot
+      - patch
+    state: present
+
+- name: Install base-devel for AUR and other stuff 2
+  community.general.pacman:
+    name:
+      - base-devel
+    state: present
+
+- name: Make AUR build user
+  ansible.builtin.user:
+    name: aur_builder
+    create_home: yes
+    group: wheel
+
+- name: Set up remote_tmp dir
+  ansible.builtin.file:
+    path: /home/aur_builder/.ansible/tmp
+    state: directory
+    owner: aur_builder
+    group: wheel
+    mode: 0755
+
+- name: sudo for aur_builder
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/11-install-aur-builder
+    line: 'aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman'
+    create: yes
+    validate: 'visudo -cf %s'
+
+- name: AUR installs
+  block:
+    - name: get yay
+      kewlfft.aur.aur:
+        use: makepkg
+        name: yay
+        skip_pgp_check: yes
+      become: yes
+      become_user: aur_builder
+
 - name: Make sure package updating is ready
   kewlfft.aur.aur:
     upgrade: yes
 
 - name: install and update basic packages
-  kewlfft.aur.aur:
+  community.general.pacman:
     name:
       - a2ps
       - acpi
@@ -21,14 +72,19 @@
       - bind
       - bash-completion
       - btrfs-progs
+      - cmake
+      - doas
+      - emacs
       - git
       - gnupg
       - man
+      - pkgconf
       - restic
       - rsync
       - starship
       - syncthing
       - tailscale
+      - wget
 
 - name: For emacs, install and update basic packages
   kewlfft.aur.aur:
@@ -45,3 +101,23 @@
    # systemctl enable --now udevmon
    # from:
    #   https://emacsredux.com/blog/2020/07/05/remap-enter-to-control-in-gnu-linux-2020-edition/
+
+- name: Do tailscale stuff
+  block:
+    - name: Install tailscale
+      community.general.pacman:
+        name:
+          - tailscale
+
+    - name: Start tailscaled service
+      ansible.builtin.systemd:
+        name: tailscaled
+        state: started
+        enabled: true
+
+    - name: Authenticate tailscale
+      include_role:
+        name: artis3n.tailscale
+      vars:
+        tailscale_authkey: "{{ TAILSCALE_KEY }}"
+        tailscale_args: "--ssh"
