@@ -11,7 +11,7 @@ run:
 	run_archiso -d -i $(shell ls archlinux-*.iso | sort | tail -1)
 
 archiso:
-	 ansible-playbook $(DEBUG_FLAG) -f 2 -i inventory.yml archiso-img.yml |& tee archiso.log
+	 ansible-playbook $(DEBUG_FLAG) --ask-become-pass -f 2 -i inventory.yml archiso-img.yml |& tee archiso.log
 
 rpi-img:
 	ansible-playbook $(DEBUG_FLAG) -i inventory.yml rpi-img.yml
