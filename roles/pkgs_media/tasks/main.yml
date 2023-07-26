@@ -1,35 +1,58 @@
 ---
 # Stuff that all Arch Linux installations need.
 - name: install and update audio packages
-  aur:
+  community.general.pacman:
     name:
-      - alsa-utils
-      - mplayer
+      - pamixer
       - pavucontrol
       - pipewire
-      - pipewire-alsa
       - pipewire-docs
       - pipewire-pulse
-      - pamixer
+      - wireplumber
 
 - name: install and update graphcs packages
   aur:
     name:
-      - mpv
       - gimp
       - inkscape
+      - mpv
       - youtube-dl
       - zoom
 
-- name: install and update fonts
-  aur:
-    name:
-      - noto-fonts
-      - noto-fonts-emoji
-      - noto-fonts-extra
-      - terminus-font
-      - ttf-bitstream-vera
-      - ttf-fira-code
-      - ttf-firacode-nerd
-      - ttf-font-awesome
-      - ttf-inconsolata
+# This is fragile, but I can't use systemd --user stuff unless the
+# user is logged in, and at this point, the user hasn't logged in yet.
+- name: Set up pipewire and friends
+  block:
+
+    - name: Create local systemd config directories
+      ansible.builtin.file:
+        path: "/home/{{ user_name }}/{{ item }}"
+        state: directory
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        mode: '0755'
+      loop:
+        - .config/systemd/user/default.target.wants
+        - .config/systemd/user/pipewire.service.wants
+        - .config/systemd/user/sockets.target.wants
+
+    - name: Create symbolic links for pipewire etc.
+      ansible.builtin.file:
+        src: "{{ item.src }}"
+        dest: "/home/{{ user_name }}/{{ item.dest }}"
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        status: link
+      loop:
+        - {{ dest: ".config/systemd/user/default.target.wants/pipewire-pulse.service",
+             src: "/usr/lib/systemd/user/pipewire-pulse.service" }}
+        - {{ dest: ".config/systemd/user/default.target.wants/pipewire.service",
+             src: "/usr/lib/systemd/user/pipewire.service" }}
+        - {{ dest: ".config/systemd/user/pipewire-session-manager.service",
+             src: "/usr/lib/systemd/user/wireplumber.service" }}
+        - {{ dest: ".config/systemd/user/pipewire.service.wants/wireplumber.service",
+             src: "/usr/lib/systemd/user/wireplumber.service" }}
+        - {{ dest: ".config/systemd/user/sockets.target.wants/pipewire-pulse.socket",
+             src: "/usr/lib/systemd/user/pipewire-pulse.socket" }}
+        - {{ dest: ".config/systemd/user/sockets.target.wants/pipewire.socket",
+             src: "/usr/lib/systemd/user/pipewire.socket" }}

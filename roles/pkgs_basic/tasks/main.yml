@@ -77,6 +77,7 @@
       - emacs
       - git
       - gnupg
+      - htop
       - man
       - pkgconf
       - restic
@@ -86,12 +87,24 @@
       - tailscale
       - wget
 
+- name: Fonts
+  community.general.pacman:
+    name:
+      - noto-fonts
+      - noto-fonts-emoji
+      - noto-fonts-extra
+      - terminus-font
+      - ttf-bitstream-vera
+      - ttf-dejavu
+      - ttf-fira-code
+      - ttf-firacode-nerd
+      - ttf-font-awesome
+      - ttf-inconsolata
+
 - name: For emacs, install and update basic packages
   kewlfft.aur.aur:
     name:
       - emacs
-      - ttf-dejavu
-      - ttf-fira-code
       - aspell
       - aspell-en
 
