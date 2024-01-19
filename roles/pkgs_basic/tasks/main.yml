@@ -80,6 +80,9 @@
       - htop
       - man
       - pkgconf
+      - python-pip
+      - python-pipx
+      - python-setuptools
       - restic
       - rsync
       - starship
@@ -107,6 +110,12 @@
       - emacs
       - aspell
       - aspell-en
+      - ansible-runner
+
+- name: Other AUR packages
+  kewlfft.aur.aur:
+    name:
+      - ansible-runner
 
 # Thinking about
    # - interception-tools

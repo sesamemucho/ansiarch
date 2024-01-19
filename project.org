@@ -4,9 +4,9 @@
 #+title: ansible-archlinux
 #+filetags: :project:
 
-* Project name: arcot
+* Project name: ansiarch
 
-Doesn't stand for anything, just a nod to an old science fiction character.
+ansible-archlinux
 
 * Todo
 
@@ -21,6 +21,11 @@ Doesn't stand for anything, just a nod to an old science fiction character.
    inventory file.
  - [ ] Make var with partitions and mount points, size, etc. for data disk(s)
  - [ ] Make "make help"
+
+** systemctl enable --now systemd-resolver
+
+** WTF - I seemed to have stopped halfway through separating efi from bios pre-load
+
 
 * Image files
 http://ca.us.mirror.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz

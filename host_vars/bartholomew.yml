@@ -1,0 +1,19 @@
+---
+ipa:
+  eno1:
+    type: wired
+    style: dhcp
+
+boottype: efi
+
+config_roles:
+  - pkgs_basic
+  # - pkgs_admin
+  # - nfs
+  # - desktop
+  # - pkgs_dev
+  # - my_arch_pkgs
+  # - dotfiles
+  # - emacs_config
+
+nfs_type: server

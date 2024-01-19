@@ -10,6 +10,11 @@
       - pipewire-pulse
       - wireplumber
 
+- name: install and update other interesting media packages
+  community.general.pacman:
+    name:
+      - sonic-pi
+
 - name: install and update graphcs packages
   aur:
     name:
