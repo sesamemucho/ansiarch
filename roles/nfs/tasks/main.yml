@@ -1,9 +1,9 @@
 ---
 # tasks file for nfs
 - name: Install NFS server
-  include: nfs-server.yml
+  include_tasks: nfs-server.yml
   when: nfs_type == "server"
 
 - name: Install NFS client
-  include: nfs-client.yml
+  include_tasks: nfs-client.yml
   when: nfs_type == "client"

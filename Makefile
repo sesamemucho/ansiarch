@@ -5,7 +5,7 @@ HOST ?= unset
 hosts := $(patsubst host_vars/%.yml,%,$(wildcard host_vars/*.yml))
 
 gen:
-	ansible-galaxy install -r requirements.yml
+	ansible-galaxy collection install -U -r requirements.yml
 
 run:
 	run_archiso -d -i $(shell ls archlinux-*.iso | sort | tail -1)
@@ -54,7 +54,7 @@ load:
 	    echo "make HOST=myhost load"; \
 	    exit; \
 	  fi; \
-	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="aa_host=$(HOST)" -l gabriel load.yml
+	  ansible-playbook $(DEBUG_FLAG) -i inventory.yml --extra-vars="aa_host=$(HOST)" -l gabriel load.yml |& tee load-$(HOST).log
 
 configure:
 	@ set -e; \
@@ -64,7 +64,7 @@ configure:
 	    echo "make HOST=myhost configure"; \
 	    exit; \
 	  fi; \
-	ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) configure.yml
+	ansible-playbook $(DEBUG_FLAG) -i inventory.yml -l $(HOST) configure.yml |& tee config-$(HOST).log
 
 # Template to create rules for each VM host named in host_vars/
 #

@@ -100,7 +100,7 @@
   ansible.builtin.command: pacman-key --populate
 
 - name: Run pacstrap
-  ansible.builtin.command: pacstrap /mnt base btrfs-progs dhclient dhcpcd efibootmgr grub linux linux-firmware netctl openssh python sudo ansible git sshpass rsync vim wpa_supplicant
+  ansible.builtin.command: pacstrap /mnt base btrfs-progs dhclient dhcpcd efibootmgr grub linux linux-firmware netctl openssh python sudo systemd-resolvconf ansible git sshpass rsync vim wpa_supplicant
 
 - name: Generate fstab
   block:
@@ -294,6 +294,12 @@
 - name: Set up for ansible ssh
   ansible.builtin.command: cp -p /root/.ssh/authorized_keys /mnt/root/.ssh/
 
+- name: Make sure systemd-resolved is ready and willing
+  ansible.builtin.systemd:
+    state: started
+    enabled: true
+    name: systemd-resolved
+
 # - name: Setup netctl
 #   block:
 #     - name: Create netctl profile for wired connection
@@ -332,8 +338,8 @@
 # when type == wireless
 # when type == wired
 
-- name: Reboot
-  ansible.builtin.command: /sbin/shutdown -r +1
-  async: 0
-  poll: 0
-  ignore_errors: true
+# - name: Reboot
+#   ansible.builtin.command: /sbin/shutdown -r +1
+#   async: 0
+#   poll: 0
+#   ignore_errors: true

@@ -54,7 +54,7 @@
     - name: get yay
       kewlfft.aur.aur:
         use: makepkg
-        name: yay
+        name: yay-bin
         skip_pgp_check: yes
       become: yes
       become_user: aur_builder
@@ -62,6 +62,8 @@
 - name: Make sure package updating is ready
   kewlfft.aur.aur:
     upgrade: yes
+  become: yes
+  become_user: aur_builder
 
 - name: install and update basic packages
   community.general.pacman:
@@ -111,11 +113,15 @@
       - aspell
       - aspell-en
       - ansible-runner
+  become: yes
+  become_user: aur_builder
 
 - name: Other AUR packages
   kewlfft.aur.aur:
     name:
       - ansible-runner
+  become: yes
+  become_user: aur_builder
 
 # Thinking about
    # - interception-tools
@@ -123,6 +129,12 @@
    # systemctl enable --now udevmon
    # from:
    #   https://emacsredux.com/blog/2020/07/05/remap-enter-to-control-in-gnu-linux-2020-edition/
+
+- name: Turn off the GD bell
+  ansible.builtin.lineinfile:
+    path: /etc/inputrc
+    regexp: '^#set bell-style none'
+    line: set bell-style none
 
 - name: Do tailscale stuff
   block:
