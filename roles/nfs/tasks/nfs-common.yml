@@ -1,0 +1,22 @@
+---
+- name: Install NFS utils
+  kewlfft.aur.aur:
+    name:
+      - nfs-utils
+
+- name: permit traffic in public zone for various services
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  loop:
+    - nfs
+    - mountd
+    - rpc-bind
+  notify: reload firewalld
+
+- name: Restart rpcbind
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: rpcbind

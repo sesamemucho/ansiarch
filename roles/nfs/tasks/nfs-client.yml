@@ -1,14 +1,6 @@
 ---
-- name: Install NFS utils
-  kewlfft.aur.aur:
-    name:
-      - nfs-utils
-
-- name: Create share directories
-  ansible.builtin.file:
-    path: "{{ item.value['share_path'] }}"
-    state: directory
-  loop: "{{ nfslist }}"
+- name: Common
+  include_tasks: nfs-common.yml
 
 - name: permit traffic in public zone for various services
   ansible.posix.firewalld:
@@ -22,10 +14,11 @@
   notify: reload firewalld
 
 - name: Set up mounts
-  ansible.posix.mount:
-    src: "{{ nfs_server_host }}:{{ item.value['export_path'] }}"
-    path: "{{ item.value['share_path'] }}"
-    opts: rw,sync,soft
-    state: mounted
-    fstype: nfs
-  loop: "{{ nfslist }}"
+  include_tasks: do_client.yml
+  # ansible.posix.mount:
+  #   src: "{{ item.host }}:{{ item.src }}"
+  #   path: "{{ item.dest }}"
+  #   opts: rw,sync,soft
+  #   state: mounted
+  #   fstype: nfs
+  loop: "{{ host_config['nfs_client'] }}"

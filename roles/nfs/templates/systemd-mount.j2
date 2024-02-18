@@ -1,0 +1,13 @@
+[Unit]
+Description=Mount {{ item.name }} at boot
+
+[Mount]
+What={{ item.host }}:{{ item.src }}
+Where={{ item.dest }}
+Options=vers=4,noauto,user,rw
+Type=nfs
+TimeoutSec=30
+ForceUnmount=true
+
+[Install]
+WantedBy=multi-user.target
