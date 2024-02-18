@@ -1,0 +1,7 @@
+---
+# Media stuff
+- name: Install graphics packages
+  community.general.pacman:
+    name:
+      - digikam
+

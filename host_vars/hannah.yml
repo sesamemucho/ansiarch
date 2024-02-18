@@ -6,14 +6,31 @@ ipa:
 
 boottype: efi
 
+diskinfo:
+  /dev/sdb:
+    - dev: /dev/sdb
+      partname: data
+      number: 1
+      label: gpt
+      start: 0%
+      end:  100%
+      fstype: btrfs
+      mount: /data
+
+backup_dirs:
+  - /data
+
 config_roles:
   - pkgs_basic
   - pkgs_admin
-  - nfs
-  # - desktop
+  - desktop
   - pkgs_dev
+  - media
   # - my_arch_pkgs
-  # - dotfiles
-  # - emacs_config
+  - dotfiles
+  - emacs_config
+  - restic
 
-nfs_type: server
+nfs_server:
+  - /data
+

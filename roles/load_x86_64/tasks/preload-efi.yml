@@ -53,13 +53,13 @@
 - name: Create filesystems
   block:
     - name: Create FAT32 filesystem in boot partition
-      ansible.builtin.filesystem:
+      community.general.filesystem:
         dev: '{{ install_drive }}{{ boot_partition_suffix }}'
         fstype: vfat
         opts: -F32
         force: yes
     - name: Create filesystem in root volume
-      ansible.builtin.filesystem:
+      community.general.filesystem:
         dev: /dev/mapper/root
         fstype: '{{ root_filesystem }}'
         force: yes
@@ -67,7 +67,7 @@
 - name: Mount filesystems
   block:
     - name: Mount root filesystem
-      ansible.builtin.mount:
+      ansible.posix.mount:
         path: /mnt
         src: /dev/mapper/root
         fstype: '{{ root_filesystem }}'
@@ -77,7 +77,7 @@
         path: /mnt/boot
         state: directory
     - name: Mount boot filesystem
-      ansible.builtin.mount:
+      ansible.posix.mount:
         path: /mnt/boot
         src: '{{ install_drive }}{{ boot_partition_suffix }}'
         fstype: vfat
@@ -107,7 +107,7 @@
     - name: Generate blank fstab
       ansible.builtin.command: genfstab -U /mnt >> /mnt/etc/fstab
     - name: Add root volume to fstab
-      ansible.builtin.mount:
+      ansible.posix.mount:
         fstab: /mnt/etc/fstab
         path: /
         src: /dev/mapper/root
@@ -116,7 +116,7 @@
         passno: '0'
         state: present
     - name: Add boot volume to fstab
-      ansible.builtin.mount:
+      ansible.posix.mount:
         fstab: /mnt/etc/fstab
         path: /boot
         src: '{{ install_drive }}{{ boot_partition_suffix }}'

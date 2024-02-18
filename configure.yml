@@ -3,6 +3,22 @@
   become: yes
 
   tasks:
+    - name: Set up disks, if requested
+      ansible.builtin.include_role:
+        name: "setup_disk"
+
+    - name: Update pacman and keys
+      ansible.builtin.include_role:
+        name: "update_pacman"
+
+    - name: Set up NFS, if requested
+      ansible.builtin.include_role:
+        name: "nfs"
+
+    - name: Set up NTP; everyone needs this
+      ansible.builtin.include_role:
+        name: "ntp"
+
     - name: Configure me
       ansible.builtin.include_role:
         name: "{{ config_role }}"

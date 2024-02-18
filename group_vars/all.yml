@@ -21,6 +21,13 @@ nfs_server_host: michiba
 
 aa_mach_type: x86_64
 
+ntp_servers:
+  - 10.135.155.3
+  - 0.arch.pool.ntp.org
+  - 1.arch.pool.ntp.org
+  - 2.arch.pool.ntp.org
+  - 3.arch.pool.ntp.org
+
 timezone: /usr/share/zoneinfo/America/Los_Angeles
 locales:
   - en_US.UTF-8 UTF-8

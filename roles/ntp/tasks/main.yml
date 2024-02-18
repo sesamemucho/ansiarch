@@ -1,0 +1,22 @@
+---
+# tasks file for ntp
+# Everyone needs one
+- name: Install ntp
+  community.general.pacman:
+    name:
+      - ntp
+
+- name: Setup NTP configuration
+  ansible.builtin.template:
+    src: templates/ntp.conf.j2
+    dest: /etc/ntp.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: enable --now for ntpd
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    enabled: true
+    name: ntpd

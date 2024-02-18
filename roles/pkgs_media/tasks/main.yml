@@ -16,13 +16,15 @@
       - sonic-pi
 
 - name: install and update graphcs packages
-  aur:
+  kewlfft.aur.aur:
     name:
       - gimp
       - inkscape
       - mpv
-      - youtube-dl
+      # - youtube-dl
       - zoom
+  become: yes
+  become_user: aur_builder
 
 # This is fragile, but I can't use systemd --user stuff unless the
 # user is logged in, and at this point, the user hasn't logged in yet.
@@ -47,17 +49,17 @@
         dest: "/home/{{ user_name }}/{{ item.dest }}"
         owner: "{{ user_name }}"
         group: "{{ user_name }}"
-        status: link
+        state: link
       loop:
-        - {{ dest: ".config/systemd/user/default.target.wants/pipewire-pulse.service",
-             src: "/usr/lib/systemd/user/pipewire-pulse.service" }}
-        - {{ dest: ".config/systemd/user/default.target.wants/pipewire.service",
-             src: "/usr/lib/systemd/user/pipewire.service" }}
-        - {{ dest: ".config/systemd/user/pipewire-session-manager.service",
-             src: "/usr/lib/systemd/user/wireplumber.service" }}
-        - {{ dest: ".config/systemd/user/pipewire.service.wants/wireplumber.service",
-             src: "/usr/lib/systemd/user/wireplumber.service" }}
-        - {{ dest: ".config/systemd/user/sockets.target.wants/pipewire-pulse.socket",
-             src: "/usr/lib/systemd/user/pipewire-pulse.socket" }}
-        - {{ dest: ".config/systemd/user/sockets.target.wants/pipewire.socket",
-             src: "/usr/lib/systemd/user/pipewire.socket" }}
+        - { dest: ".config/systemd/user/default.target.wants/pipewire-pulse.service",
+             src: "/usr/lib/systemd/user/pipewire-pulse.service" }
+        - { dest: ".config/systemd/user/default.target.wants/pipewire.service",
+             src: "/usr/lib/systemd/user/pipewire.service" }
+        - { dest: ".config/systemd/user/pipewire-session-manager.service",
+             src: "/usr/lib/systemd/user/wireplumber.service" }
+        - { dest: ".config/systemd/user/pipewire.service.wants/wireplumber.service",
+             src: "/usr/lib/systemd/user/wireplumber.service" }
+        - { dest: ".config/systemd/user/sockets.target.wants/pipewire-pulse.socket",
+             src: "/usr/lib/systemd/user/pipewire-pulse.socket" }
+        - { dest: ".config/systemd/user/sockets.target.wants/pipewire.socket",
+             src: "/usr/lib/systemd/user/pipewire.socket" }

@@ -1,18 +1,5 @@
 ---
 # Stuff that all Arch Linux installations need.
-- name: Initialize pacman keys
-  ansible.builtin.command:
-    cmd: pacman-key --init
-
-- name: Update pacman keys
-  ansible.builtin.command:
-    cmd: pacman-key --populate
-
-- name: Update packages
-  community.general.pacman:
-    update_cache: true
-    upgrade: true
-
   # See: https://github.com/ansible-collections/community.general/issues/6290
 - name: Install base-devel for AUR and other stuff 1a
   community.general.pacman:
@@ -80,6 +67,7 @@
       - git
       - gnupg
       - htop
+      - lsof
       - man
       - pkgconf
       - python-pip
@@ -90,6 +78,7 @@
       - starship
       - syncthing
       - tailscale
+      - tmux
       - wget
 
 - name: Fonts

@@ -1,0 +1,37 @@
+---
+- name: Print partition info
+  ansible.builtin.debug:
+    var: item
+
+- name: Print partition start info
+  ansible.builtin.debug:
+    var: item.start
+
+- name: Create partition
+  community.general.parted:
+    device: "{{ item.dev }}"
+    label: "{{ item.label }}"
+    number: "{{ item.number }}"
+    state: present
+    part_start: "{{ item.start }}"
+    part_end: "{{ item.end }}"
+    fs_type: "{{ item.fstype }}"
+
+- name: Create filesystem
+  community.general.filesystem:
+    dev: "{{ item.dev }}{{ item.number }}"
+    fstype: "{{ item.fstype }}"
+    force: false
+    state: present
+
+- name: Create mountpoint
+  ansible.builtin.file:
+    path: "{{ item.mount }}"
+    state: directory
+
+- name: Mount filesystem
+  ansible.posix.mount:
+    path: "{{ item.mount }}"
+    src: "{{ item.dev }}{{ item.number }}"
+    fstype: "{{ item.fstype }}"
+    state: mounted

@@ -1,2 +1,3 @@
 ---
+# vars file for ntp
 host_config: "{{ hostvars[inventory_hostname] }}"

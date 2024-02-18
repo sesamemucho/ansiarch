@@ -1,0 +1,5 @@
+---
+- name: Handle partitions
+  include_tasks: handleparts.yml
+
+  loop: "{{ outer_item.value }}"

@@ -1,0 +1,9 @@
+---
+# tasks file for setup_disk
+- name: Handle partitions
+  include_tasks: handledisks.yml
+
+  loop: "{{ host_config['diskinfo']|dict2items }}"
+  loop_control:
+    loop_var: outer_item
+  when: '"diskinfo" in host_config'
