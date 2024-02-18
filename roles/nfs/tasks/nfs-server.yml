@@ -1,25 +1,6 @@
 ---
-- name: Install NFS utils
-  kewlfft.aur.aur:
-    name:
-      - nfs-utils
-
-- name: permit traffic in public zone for various services
-  ansible.posix.firewalld:
-    service: "{{ item }}"
-    permanent: yes
-    state: enabled
-  loop:
-    - nfs
-    - mountd
-    - rpc-bind
-  notify: reload firewalld
-
-- name: Restart rpcbind
-  ansible.builtin.systemd:
-    state: restarted
-    daemon_reload: yes
-    name: rpcbind
+- name: Common
+  include_tasks: nfs-common.yml
 
 - name: Restart nfs-server
   ansible.builtin.systemd:
@@ -48,7 +29,6 @@
       {{export}} {{ ip_start }}.{{ ip_netw }}/{{ ip_cidr }}(rw,sync,no_root_squash,no_all_squash,no_subtree_check)
       {% endfor %}
     dest: /etc/exports
-  # loop: "{{ host_config['nfs_server'] }}"
 
  # blockinfile:
  #    dest: /etc/haproxy/haproxy.cfg

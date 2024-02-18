@@ -20,7 +20,11 @@ config_roles:
   - pkgs_dev
   - dotfiles
 
-nfs_type: none
+nfs_client:
+  - name: share-data
+    host: hannah
+    src: /data
+    dest: /share/data
 
 #disks:
 #  - 
