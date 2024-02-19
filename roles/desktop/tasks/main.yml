@@ -17,6 +17,10 @@
       - waybar
       - wdisplays
       - xorg-xwayland
+      - yubico-c
+      - yubico-c-client
+      - yubikey-manager
+      - yubikey-personalization
       - zathura
       - zathura-pdf-poppler
 
