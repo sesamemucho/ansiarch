@@ -18,6 +18,8 @@
 - name: install and update graphcs packages
   kewlfft.aur.aur:
     name:
+      - digikam
+      - geeqie
       - gimp
       - inkscape
       - mpv

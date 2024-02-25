@@ -9,12 +9,14 @@
       - i3blocks
       - i3status
       - i3-wm
+      - libreoffice
       - sway
       - swaybg
       - swayidle
       - swayimg
       - swaylock
       - waybar
+      - waypipe
       - wdisplays
       - xorg-xwayland
       - yubico-c

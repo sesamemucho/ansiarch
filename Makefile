@@ -1,6 +1,5 @@
 
 DEBUG_FLAG ?=
-KEYFILE := ./files/ansible_archlinux
 HOST ?= unset
 hosts := $(patsubst host_vars/%.yml,%,$(wildcard host_vars/*.yml))
 
