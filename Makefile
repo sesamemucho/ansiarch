@@ -3,6 +3,10 @@ DEBUG_FLAG ?=
 HOST ?= unset
 hosts := $(patsubst host_vars/%.yml,%,$(wildcard host_vars/*.yml))
 
+# Deps:
+#  ansible
+#  jq
+
 gen:
 	ansible-galaxy collection install -U -r requirements.yml
 

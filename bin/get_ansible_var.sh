@@ -6,6 +6,6 @@
 here=$(dirname $0)
 top=$(readlink -f $here/..)
 varname=${1:?Need the name of an ansible variable}
-hostname=${2:?Need the name of an ansible host}
+hostname=${2:-localhost}
 
-ansible-inventory -i $top/inventory.yml all --host $hostname | jq ".${varname}" | tr -d '""'
+ansible-inventory -i $top/inventory.yml --host $hostname | jq -j ".${varname}"
