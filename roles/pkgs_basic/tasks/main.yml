@@ -73,7 +73,6 @@
       - python-pip
       - python-pipx
       - python-setuptools
-      - restic
       - rsync
       - starship
       - syncthing
