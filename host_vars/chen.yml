@@ -7,9 +7,10 @@ ipa:
     type: wireless
     style: dhcp
 
-boot_partition_suffix: 1
-root_partition_suffix: 2
-boottype: efi
+use_luks: false
+boot_partition_suffix: 2
+root_partition_suffix: 3
+boottype: bios
 
 config_roles:
   - pkgs_basic
