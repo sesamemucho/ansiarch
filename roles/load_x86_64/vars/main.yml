@@ -6,3 +6,4 @@ pacstrap_extras:
 my_host: "{{ aa_host }}"
 niclist: "{{ hostvars[my_host]['ipa']|dict2items }}"
 my_boottype: "{{ hostvars[my_host]['boottype'] }}"
+use_luks: "{{ hostvars[my_host]['use_luks'] }}"

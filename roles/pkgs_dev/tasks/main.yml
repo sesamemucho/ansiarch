@@ -43,13 +43,14 @@
     - name: Install dev packages for VM work
       community.general.pacman:
         name:
-          - vagrant
+          - dmidecode
+          - dnsmasq
+          - edk2-ovmf
           - net-tools
+          - qemu
+          - vagrant
           - virt-manager
           - virt-viewer
-          - qemu
-          - edk2-ovmf
-
     - name: Enable service libvirt
       ansible.builtin.systemd:
         name: libvirtd

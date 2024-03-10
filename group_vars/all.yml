@@ -34,6 +34,8 @@ locales:
   - en_US ISO-8859-1
 current_locale: en_US.UTF-8
 
+#use_luks: false
+
 partition_number:
   bios:
     boot_suffix: '2'

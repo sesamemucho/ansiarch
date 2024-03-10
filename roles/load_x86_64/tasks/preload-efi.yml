@@ -6,6 +6,15 @@
 
 # - name: Synchronize clock via NTP
 #   ansible.builtin.command: timedatectl set-ntp true
+- name: Set up for luks
+  ansible.builtin.set_fact:
+    root_dev: /dev/mapper/root
+  when: use_luks
+
+- name: Set up for not luks
+  ansible.builtin.set_fact:
+    root_dev: '{{ install_drive }}{{ root_partition_suffix }}'
+  when: not use_luks
 
 - name: Repartition install drive
   block:
@@ -32,13 +41,12 @@
         # flags: [lvm]
         state: present
 
-- name: Setup LUKS encryption key
-  ansible.builtin.copy:
-    src: '{{ luks_keyfile }}'
-    dest: /root/keyfile
-
 - name: Setup LUKS encryption for root filesystem
   block:
+    - name: Setup LUKS encryption key
+      ansible.builtin.copy:
+        src: '{{ luks_keyfile }}'
+        dest: /root/keyfile
     - name: Destroy existing LUKS volume
       community.crypto.luks_device:
         device: '{{ install_drive }}{{ root_partition_suffix }}'
@@ -49,6 +57,7 @@
         keyfile: /root/keyfile
         name: root
         state: opened
+  when: use_luks
 
 - name: Create filesystems
   block:
@@ -60,7 +69,7 @@
         force: yes
     - name: Create filesystem in root volume
       community.general.filesystem:
-        dev: /dev/mapper/root
+        dev: "{{ root_dev }}"
         fstype: '{{ root_filesystem }}'
         force: yes
 
@@ -69,7 +78,7 @@
     - name: Mount root filesystem
       ansible.posix.mount:
         path: /mnt
-        src: /dev/mapper/root
+        src: '{{ root_dev }}'
         fstype: '{{ root_filesystem }}'
         state: mounted
     - name: Create mountpoint for boot volume
@@ -110,7 +119,7 @@
       ansible.posix.mount:
         fstab: /mnt/etc/fstab
         path: /
-        src: /dev/mapper/root
+        src: '{{ root_dev }}'
         fstype: '{{ root_filesystem }}'
         opts: defaults
         passno: '0'
@@ -173,8 +182,8 @@
 - name: Set up initramfs
   block:
     - name: Add vconsole.conf
-      ansible.builtin.template:
-        src: files/vconsole.conf.j2
+      ansible.builtin.copy:
+        src: vconsole.conf
         dest: /mnt/etc/vconsole.conf
         owner: root
         group: root
@@ -185,16 +194,17 @@
         dest: /mnt/etc/mkinitcpio.conf
         regexp: ^HOOKS=
         line: HOOKS=(base udev systemd keyboard keymap sd-vconsole block sd-encrypt autodetect modconf filesystems fsck)
+
     - name: Create new initramfs
       ansible.builtin.command: arch-chroot /mnt mkinitcpio -p linux
 
-- name: Set up systemd-boot
-  block:
+- name: Create directory for EFI configuration files
+  ansible.builtin.file:
+    path: /mnt/boot/loader/entries
+    state: directory
 
-    - name: Create directory for EFI configuration files
-      ansible.builtin.file:
-        path: /mnt/boot/loader/entries
-        state: directory
+- name: Set up systemd-boot for luks
+  block:
 
     - name: Get UUID for root LUKS volume
       ansible.builtin.command: blkid -s UUID -o value '{{ install_drive }}{{ root_partition_suffix }}'
@@ -208,21 +218,36 @@
 
     - name: Add commandline information to EFI config
       ansible.builtin.template:
-        src: files/arch-luks.conf.j2
+        src: arch-luks.conf.j2
         dest: /mnt/boot/loader/entries/arch.conf
         owner: root
         group: root
         mode: 0644
+  when: use_luks
 
-    - name: Add loader config
+- name: Set up systemd-boot for non-luks
+  block:
+    - name: Add commandline information to EFI config
       ansible.builtin.template:
-        src: files/loader.conf.j2
-        dest: /mnt/boot/loader/loader.conf
+        src: arch.conf.j2
+        dest: /mnt/boot/loader/entries/arch.conf
         owner: root
         group: root
         mode: 0644
-  vars:
-    root_dev: /dev/mapper/root
+  when: not use_luks
+
+- name: Create directory for EFI configuration files
+  ansible.builtin.file:
+    path: /mnt/boot/loader/entries
+    state: directory
+
+- name: Add loader config
+  ansible.builtin.copy:
+    src: loader.conf
+    dest: /mnt/boot/loader/loader.conf
+    owner: root
+    group: root
+    mode: 0644
 
 - name: Initialize systemd-boot
   block:

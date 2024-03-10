@@ -1,0 +1,25 @@
+---
+ipa:
+  eno1:
+    type: wired
+    style: dhcp
+
+boottype: efi
+
+use_luks: no
+
+config_roles:
+  - pkgs_basic
+  - pkgs_admin
+  - desktop
+  - pkgs_dev
+  - pkgs_media
+  # - my_arch_pkgs
+  - dotfiles
+  - emacs_config
+
+nfs_client:
+  - name: share-data
+    host: hannah
+    src: /data
+    dest: /share/data

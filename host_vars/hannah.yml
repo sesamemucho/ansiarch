@@ -6,6 +6,8 @@ ipa:
 
 boottype: efi
 
+use_luks: no
+
 diskinfo:
   /dev/sdb:
     - dev: /dev/sdb
