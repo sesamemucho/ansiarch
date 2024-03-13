@@ -1,6 +1,6 @@
 ---
 ipa:
-  enp0s31f6:
+  enp0s0:
     type: wired
     style: dhcp
   wlp2s0:
@@ -8,9 +8,7 @@ ipa:
     style: dhcp
 
 use_luks: false
-boot_partition_suffix: 2
-root_partition_suffix: 3
-boottype: bios
+boottype: efi
 
 config_roles:
   - pkgs_basic

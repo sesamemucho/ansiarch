@@ -124,15 +124,15 @@
         opts: defaults
         passno: '0'
         state: present
-    - name: Add boot volume to fstab
-      ansible.posix.mount:
-        fstab: /mnt/etc/fstab
-        path: /boot
-        src: '{{ install_drive }}{{ boot_partition_suffix }}'
-        fstype: vfat
-        opts: defaults
-        passno: '2'
-        state: present
+    # - name: Add boot volume to fstab
+    #   ansible.posix.mount:
+    #     fstab: /mnt/etc/fstab
+    #     path: /boot
+    #     src: '{{ install_drive }}{{ boot_partition_suffix }}'
+    #     fstype: vfat
+    #     opts: defaults
+    #     passno: '2'
+    #     state: present
 
 - name: Set local timezone
   ansible.builtin.command: arch-chroot /mnt ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
@@ -248,6 +248,12 @@
     owner: root
     group: root
     mode: 0644
+
+- name: Fix permission on /boot
+  ansible.builtin.file:
+    path: /mnt/boot
+    mode: 0600
+    state: directory
 
 - name: Initialize systemd-boot
   block:
