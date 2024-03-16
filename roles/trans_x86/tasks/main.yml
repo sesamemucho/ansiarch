@@ -70,7 +70,7 @@
 
 # - name: Set hostname
 #   ansible.builtin.hostname:
-#     name: "{{ my_host }}.{{ domain }}"
+#     name: "{{ my_host }}{{ domain }}"
 #     use: systemd
 
 # - name: Change ansible name for this host

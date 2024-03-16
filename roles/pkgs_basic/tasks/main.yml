@@ -76,7 +76,6 @@
       - rsync
       - starship
       - syncthing
-      - tailscale
       - tmux
       - wget
 
@@ -130,6 +129,7 @@
       community.general.pacman:
         name:
           - tailscale
+          - ethtool
 
     - name: Start tailscaled service
       ansible.builtin.systemd:
