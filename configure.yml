@@ -7,6 +7,12 @@
       ansible.builtin.include_role:
         name: "setup_disk"
 
+    - name: Handle networking, just in case of changes
+      ansible.builtin.include_role:
+        name: load_x86_64
+        tasks_from: network
+        # TODO: Don't forget other architectures
+
     - name: Update pacman and keys
       ansible.builtin.include_role:
         name: "update_pacman"

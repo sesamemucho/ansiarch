@@ -1,0 +1,72 @@
+---
+- name: Copy netctl DHCP config
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}-config.j2"
+    dest: "{{ root_top }}etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: item.value['style'] == "dhcp"
+
+- name: Copy netctl static config
+  ansible.builtin.template:
+    src: "{{ item.value['type'] }}-static-config.j2"
+    dest: "{{ root_top }}etc/netctl/{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: item.value['style'] == "static"
+
+- name: Enable netctl configs
+  ansible.builtin.command: arch-chroot /mnt /usr/bin/netctl enable "{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: ansible_nodename == 'gabriel'
+
+- name: Enable netctl configs
+  ansible.builtin.command: /usr/bin/netctl enable "{{ item.key }}"
+  loop: "{{ niclist }}"
+  when: ansible_nodename != 'gabriel'
+
+- name: Set up for ansible ssh
+  ansible.builtin.command: cp -p /root/.ssh/authorized_keys "{{ root_top }}root/.ssh/"
+  when: ansible_nodename == 'gabriel'
+
+- name: Make sure systemd-resolved is ready and willing
+  ansible.builtin.systemd:
+    state: started
+    enabled: true
+    name: systemd-resolved
+
+# - name: Setup netctl
+#   block:
+#     - name: Create netctl profile for wired connection
+#       copy:
+#         content: |
+#           Description='Wired with DHCP'
+#           Interface={{ wired_interface }}
+#           Connection=ethernet
+#           IP=dhcp
+#           IP6=dhcp-noaddr
+#           # IPv6 traffic is tunneled over IPv4, which eats 20 bytes of the MTU.
+#           ExecUpPost='/usr/bin/ip link set {{ wired_interface }} mtu 1480'
+#         dest: /mnt/etc/netctl/wired
+
+#     - name: Enable wired netctl profile
+#       command: arch-chroot /mnt netctl enable wired
+
+# - name: Setup netctl wireless
+#   block:
+#     - name: Create netctl profile for wireless connection
+#       copy:
+#         content: |
+#           Description='Wireless with DHCP'
+#           Interface={{ wireless_interface }}
+#           Connection=wireless
+#           IP=dhcp
+#           Security=wpa
+#           ESSID='{{ wireless_ssid }}'
+#           Key='{{ wireless_key }}'
+#         dest: /mnt/etc/netctl/wireless
+
+#     - name: Enable wireless netctl profile
+#       command: arch-chroot /mnt netctl enable wireless
+
+# Loop on niclist
+# when type == wireless
+# when type == wired
