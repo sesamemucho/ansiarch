@@ -1,6 +1,6 @@
 ---
 ipa:
-  enp0s0:
+  enp3s0:
     type: wired
     style: dhcp
   wlp2s0:
@@ -21,11 +21,11 @@ config_roles:
   - pkgs_dev
   - dotfiles
 
-nfs_client:
-  - name: share-data
-    host: hannah
-    src: /data
-    dest: /share/data
+# nfs_client:
+#   - name: share-data
+#     host: hannah
+#     src: /data
+#     dest: /share/data
 
 #disks:
 #  - 
