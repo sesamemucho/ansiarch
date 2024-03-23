@@ -10,10 +10,12 @@
       - pipewire-pulse
       - wireplumber
 
-- name: install and update other interesting media packages
-  community.general.pacman:
-    name:
-      - sonic-pi
+# No longer in extra
+# aur version is orphaned
+# - name: install and update other interesting media packages
+#   community.general.pacman:
+#     name:
+#       - sonic-pi
 
 - name: install and update graphcs packages
   kewlfft.aur.aur:

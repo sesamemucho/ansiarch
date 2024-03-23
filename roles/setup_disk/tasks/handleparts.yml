@@ -19,7 +19,7 @@
 
 - name: Create filesystem
   community.general.filesystem:
-    dev: "{{ item.dev }}{{ item.number }}"
+    dev: "{{ item.dev }}{{ item.suffix }}"
     fstype: "{{ item.fstype }}"
     force: false
     state: present
@@ -32,6 +32,6 @@
 - name: Mount filesystem
   ansible.posix.mount:
     path: "{{ item.mount }}"
-    src: "{{ item.dev }}{{ item.number }}"
+    src: "{{ item.dev }}{{ item.suffix }}"
     fstype: "{{ item.fstype }}"
     state: mounted

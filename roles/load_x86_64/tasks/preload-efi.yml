@@ -109,7 +109,7 @@
   ansible.builtin.command: pacman-key --populate
 
 - name: Run pacstrap
-  ansible.builtin.command: pacstrap /mnt base btrfs-progs dhclient dhcpcd efibootmgr grub linux linux-firmware netctl openssh python sudo systemd-resolvconf ansible git sshpass rsync vim wpa_supplicant
+  ansible.builtin.command: pacstrap /mnt base btrfs-progs dhclient dhcpcd efibootmgr grub linux linux-firmware netctl openssh parted python sudo systemd-resolvconf ansible git sshpass rsync vim wpa_supplicant
 
 - name: Generate fstab
   block:
@@ -305,10 +305,13 @@
     validate: /usr/sbin/visudo --check --file=%s
 
 - name: Handle networking
-  ansible.builtin.include_tasks: network
+  ansible.builtin.include_role: 
+    name: load_x86_64
+    tasks_from: network
 
-# - name: Reboot
-#   ansible.builtin.command: /sbin/shutdown -r +1
-#   async: 0
-#   poll: 0
-#   ignore_errors: true
+- name: Reboot
+  ansible.builtin.command: /sbin/shutdown -r +1
+  async: 0
+  poll: 0
+  ignore_errors: true
+  when: not use_luks

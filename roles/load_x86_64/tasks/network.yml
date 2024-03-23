@@ -1,4 +1,12 @@
 ---
+- name: Disable ipv6
+  ansible.builtin.copy:
+    src: 70-ansiarch.conf
+    dest: /etc/sysctl.d/70-ansiarch.conf
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Copy netctl DHCP config
   ansible.builtin.template:
     src: "{{ item.value['type'] }}-config.j2"
@@ -13,25 +21,33 @@
   loop: "{{ niclist }}"
   when: item.value['style'] == "static"
 
-- name: Enable netctl configs
-  ansible.builtin.command: arch-chroot /mnt /usr/bin/netctl enable "{{ item.key }}"
-  loop: "{{ niclist }}"
+- name: Network stuff for pre-load
+  block:
+    - name: Enable netctl configs
+      ansible.builtin.command: arch-chroot /mnt /usr/bin/netctl enable "{{ item.key }}"
+      loop: "{{ niclist }}"
+
+    - name: Set up for ansible ssh
+      ansible.builtin.command: cp -p /root/.ssh/authorized_keys "{{ root_top }}root/.ssh/"
+
+    - name: Make sure systemd-resolved is ready and willing
+      ansible.builtin.command: arch-chroot /mnt /usr/bin/systemctl enable --now systemd-resolved"
+
   when: ansible_nodename == 'gabriel'
 
-- name: Enable netctl configs
-  ansible.builtin.command: /usr/bin/netctl enable "{{ item.key }}"
-  loop: "{{ niclist }}"
+- name: Network stuff for configure
+  block:
+    - name: Enable netctl configs
+      ansible.builtin.command: /usr/bin/netctl enable "{{ item.key }}"
+      loop: "{{ niclist }}"
+
+    - name: Make sure systemd-resolved is ready and willing
+      ansible.builtin.systemd:
+        state: started
+        enabled: true
+        name: systemd-resolved
+
   when: ansible_nodename != 'gabriel'
-
-- name: Set up for ansible ssh
-  ansible.builtin.command: cp -p /root/.ssh/authorized_keys "{{ root_top }}root/.ssh/"
-  when: ansible_nodename == 'gabriel'
-
-- name: Make sure systemd-resolved is ready and willing
-  ansible.builtin.systemd:
-    state: started
-    enabled: true
-    name: systemd-resolved
 
 # - name: Setup netctl
 #   block:

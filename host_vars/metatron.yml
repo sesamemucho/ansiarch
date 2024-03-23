@@ -1,11 +1,38 @@
 ---
 ipa:
-  eth0:
+  eno1:
     type: wired
     style: dhcp
-  wlan0:
-    type: wireless
-    style: dhcp
+
+boottype: efi
+
+use_luks: no
+
+diskinfo:
+  /dev/nveme0n1:
+    - dev: /dev/nvme0n1
+      partname: data
+      number: 1
+      suffix: p1
+      label: gpt
+      start: 0%
+      end:  100%
+      fstype: btrfs
+      mount: /data
+
+# backup_dirs:
+#   - /data
 
 config_roles:
   - pkgs_basic
+  - pkgs_admin
+  - restic
+  - desktop
+  - pkgs_dev
+  - pkgs_media
+  # - my_arch_pkgs
+  - dotfiles
+  - emacs_config
+
+# nfs_server:
+#   - /data
