@@ -6,6 +6,8 @@
     - name: Set up disks, if requested
       ansible.builtin.include_role:
         name: "setup_disk"
+      vars:
+         disk_category: "install_disks"
 
     - name: Handle networking, just in case of changes
       ansible.builtin.include_role:

@@ -1,22 +1,46 @@
 ---
-- hosts: hannah
-  connection: ssh
-  remote_user: root
+- hosts: localhost
+  connection: local
+  become: yes
 
-  vars:
-    niclist: "{{ hostvars[inventory_hostname]['ipa']|dict2items }}"
-    my_boottype: "{{ hostvars[inventory_hostname]['boottype'] }}"
-    # disks:   "{{ hostvars[inventory_hostname]['diskinfo']|dict2items }}"
+  # vars:
+  #   disk_category: "install_disks"
+
+  # vars_prompt:
+  #   - name: ok_to_wipe_install_disks
+  #     prompt: "OK to wipe install disks (yes or no)?"
+  #     private: false
 
   tasks:
-    - name: Handle partitions
-      include_tasks: handledisks.yml
-
-      loop: "{{ hostvars[inventory_hostname]['diskinfo']|dict2items }}"
+    - name: Run setup_disk
+      ansible.builtin.include_role:
+        name:  setup_disk
+      loop:
+        - "install_disks"
+        - "data_disks"
       loop_control:
-        loop_var: outer_item
-      when: '"diskinfo" in hostvars[inventory_hostname]'
+        loop_var: disk_category
+      # when: ok_to_wipe_install_disks | bool
 
-    # - name: Print return information from the previous task
-    #   ansible.builtin.debug:
-    #     var: hostvars[inventory_hostname]['diskinfo']
+
+# - hosts: hannah
+#   connection: ssh
+#   remote_user: root
+
+#   vars:
+#     niclist: "{{ hostvars[inventory_hostname]['ipa']|dict2items }}"
+#     my_boottype: "{{ hostvars[inventory_hostname]['boottype'] }}"
+#     # disks:   "{{ hostvars[inventory_hostname]['diskinfo']|dict2items }}"
+
+#   tasks:
+#     - name: Handle partitions
+#       include_tasks: handledisks.yml
+
+#       loop: "{{ hostvars[inventory_hostname]['diskinfo']|dict2items }}"
+#       loop_control:
+#         loop_var: outer_item
+#       when: '"diskinfo" in hostvars[inventory_hostname]'
+
+#     # - name: Print return information from the previous task
+#     #   ansible.builtin.debug:
+#     #     var: hostvars[inventory_hostname]['diskinfo']

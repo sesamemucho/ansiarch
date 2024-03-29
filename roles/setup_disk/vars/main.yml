@@ -1,3 +1,4 @@
 ---
 # vars file for setup_disk
-host_config: "{{ hostvars[inventory_hostname] }}"
+this_host: "{{ aa_host|default(inventory_hostname) }}"
+host_config: "{{ hostvars[this_host] }}"

@@ -3,7 +3,7 @@
 - name: Handle partitions
   include_tasks: handledisks.yml
 
-  loop: "{{ host_config['diskinfo']|dict2items }}"
+  loop: "{{ host_config[disk_category]|dict2items }}"
   loop_control:
     loop_var: outer_item
-  when: '"diskinfo" in host_config'
+  when: 'disk_category in host_config'

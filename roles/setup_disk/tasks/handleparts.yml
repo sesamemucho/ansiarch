@@ -3,35 +3,65 @@
   ansible.builtin.debug:
     var: item
 
-- name: Print partition start info
+- name: Print partition xxx info
   ansible.builtin.debug:
-    var: item.start
+    msg: "{{ item.value.flags|default([]) }}"
+
+- name: Set device name
+  ansible.builtin.set_fact:
+    partition_name: "{{ use_luks|ternary('/dev/mapper/' ~ item.key, device_name ~ item.value.suffix) }}"
+    force_fs: "{{ (disk_category == 'install_disks')|bool }}"
+
+- name: Print other info
+  ansible.builtin.debug:
+    var:  force_fs
 
 - name: Create partition
   community.general.parted:
-    device: "{{ item.dev }}"
-    label: "{{ item.label }}"
-    number: "{{ item.number }}"
+    device: "{{ device_name }}"
+    label: "{{ item.value.label }}"
+    number: "{{ item.value.number }}"
     state: present
-    part_start: "{{ item.start }}"
-    part_end: "{{ item.end }}"
-    fs_type: "{{ item.fstype }}"
+    flags: "{{ item.value.flags|default([]) }}"
+    part_start: "{{ item.value.start }}"
+    part_end: "{{ item.value.end }}"
+
+- name: Setup LUKS encryption
+  block:
+    - name: Setup LUKS encryption key
+      ansible.builtin.copy:
+        content: '{{ luks_key }}'
+        dest: /root/keyfile
+    - name: Destroy existing LUKS volume
+      community.crypto.luks_device:
+        device: '{{ device_name }}{{ item.value.suffix }}'
+        state: absent
+    - name: Create and open LUKS volume
+      community.crypto.luks_device:
+        device: '{{ device_name }}{{ item.value.suffix }}'
+        keyfile: /root/keyfile
+        name: '{{ item.key }}'
+        state: opened
+  when: use_luks
 
 - name: Create filesystem
   community.general.filesystem:
-    dev: "{{ item.dev }}{{ item.suffix }}"
-    fstype: "{{ item.fstype }}"
-    force: false
+    dev: "{{ partition_name }}"
+    fstype: "{{ item.value.fstype }}"
+    force: "{{ force_fs }}"
     state: present
 
-- name: Create mountpoint
-  ansible.builtin.file:
-    path: "{{ item.mount }}"
-    state: directory
+- name: Mount if not install_disks
+  block:
+  - name: Create mountpoint
+    ansible.builtin.file:
+      path: "{{ item.mount }}"
+      state: directory
 
-- name: Mount filesystem
-  ansible.posix.mount:
-    path: "{{ item.mount }}"
-    src: "{{ item.dev }}{{ item.suffix }}"
-    fstype: "{{ item.fstype }}"
-    state: mounted
+  - name: Mount filesystem
+    ansible.posix.mount:
+      path: "{{ item.mount }}"
+      src: "{{ device_name }}{{ item.suffix }}"
+      fstype: "{{ item.fstype }}"
+      state: mounted
+  when: disk_category != 'install_disks'
