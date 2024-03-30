@@ -1,18 +1,6 @@
 ---
 - name: Query about wiping install disks
   block:
-  - name: ehh
-    ansible.builtin.debug:
-      msg: "host is {{ this_host }} inv is {{ inventory_hostname }}"
-
-  - name: ooops
-    ansible.builtin.command: parted /dev/sda print
-    register: cmdout
-
-  - name: oops
-    ansible.builtin.debug:
-      var: cmdout.stdout
-
   - name: wut
     ansible.builtin.pause:
         prompt: "OK to wipe disk?"
@@ -27,12 +15,12 @@
     ansible.builtin.pause:
       seconds: 10
 
-  # - name: Wipe install drive and all its partitions
-  #   ansible.builtin.command: wipefs --force --all  "{{ install_drive }}"
-  #   when: 'wipe_p.user_input|bool'
+  - name: Wipe install drive and all its partitions
+    ansible.builtin.command: wipefs --force --all  "{{ outer_item.key }}"
+    when: 'wipe_p.user_input|bool'
 
-#  when: 'disk_category == "install_disks" and inventory_hostname != "localhost"'
-  when: 'disk_category == "install_disks"'
+  when: 'disk_category == "install_disks" and inventory_hostname != "localhost"'
+#  when: 'disk_category == "install_disks"'
 
 - name: Handle partitions
   include_tasks: handleparts.yml

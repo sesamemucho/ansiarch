@@ -42,7 +42,17 @@
         keyfile: /root/keyfile
         name: '{{ item.key }}'
         state: opened
+    - name: Remember luks
+      ansible.builtin.set_fact:
+        have_root_luks: True
+      when: item.key == "root"
+
   when: use_luks
+
+- name: Remember boot partition for later
+  ansible.builtin.set_fact:
+    boot_partition_name: "{{ partition_name }}"
+  when: item.key == "boot"
 
 - name: Create filesystem
   community.general.filesystem:

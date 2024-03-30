@@ -16,10 +16,21 @@
     root_dev: '{{ install_drive }}{{ root_partition_suffix }}'
   when: not use_luks
 
+- name: Get device upon which Arch will be installed
+  ansible.builtin.set_fact:
+    install_dev: "{{ my_host_vars['install_disks'].keys()|first }}"
+
+- name: dbg1
+  ansible.builtin.debug:
+    msg: "boot fstype: {{ my_host_vars['install_disks'][install_dev].boot.fstype }}"
+
+# - name: Bye
+#   meta: end_play
+
 - name: Run setup_disk
   ansible.builtin.include_role:
     name:  setup_disk
-  var:
+  vars:
     disk_category: 'install_disks'
 
 # - name: Repartition install drive
@@ -79,24 +90,31 @@
 #         fstype: '{{ root_filesystem }}'
 #         force: yes
 
+- name: Do we have root luks?
+  ansible.builtin.debug:
+    var: have_root_luks
+
 - name: Mount filesystems
   block:
     - name: Mount root filesystem
       ansible.posix.mount:
         path: /mnt
-        src: '{{ root_dev }}'
-        fstype: '{{ root_filesystem }}'
+        src: '/dev/mapper/root'
         state: mounted
-    - name: Create mountpoint for boot volume
-      ansible.builtin.file:
-        path: /mnt/boot
-        state: directory
-    - name: Mount boot filesystem
-      ansible.posix.mount:
-        path: /mnt/boot
-        src: '{{ install_drive }}{{ boot_partition_suffix }}'
-        fstype: vfat
-        state: mounted
+        fstype: "{{ my_host_vars['install_disks'][install_dev].root.fstype }}"
+  when: have_root_luks
+
+- name: Create mountpoint for boot volume
+  ansible.builtin.file:
+    path: /mnt/boot
+    state: directory
+
+- name: Mount boot filesystem
+  ansible.posix.mount:
+    path: /mnt/boot
+    src: '{{ boot_partition_name }}'
+    fstype: "{{ my_host_vars['install_disks'][install_dev].boot.fstype }}"
+    state: mounted
 
 - name: Rank Arch mirrors
   block:

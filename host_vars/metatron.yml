@@ -6,20 +6,18 @@ ipa:
 
 boottype: efi
 
-use_luks: no
-
 install_disks:
-  /dev/nveme0n1:
+  /dev/nvme0n1:
     boot:
       number: 1
       suffix: p1
       label: gpt
-      start: 0
+      start: 0%
       end:  512MB
       flags:
         - boot
         - esp
-      fstype: fat32
+      fstype: vfat
       mount:
     root:
       number: 2
@@ -30,7 +28,6 @@ install_disks:
       opts: -F32
       fstype: btrfs
       mount: /root
-      use_luks: yes
 
 data_disks:
   /dev/sda:
@@ -39,35 +36,9 @@ data_disks:
       suffix: 1
       label: gpt
       start: 0%
-      end:  90%
+      end:  100%
       fstype: btrfs
       mount: /data
-     next1:
-      number: 2
-      suffix: 2
-      label: gpt
-      start: 90%
-      end:  100%
-      fstype: btrfs
-      mount: /data/next1
-
-  /dev/sdb:
-     stuff:
-      number: 1
-      suffix: 1
-      label: gpt
-      start: 0%
-      end:  90%
-      fstype: btrfs
-      mount: /data/stuff
-     tyson:
-      number: 2
-      suffix: 2
-      label: gpt
-      start: 90%
-      end:  100%
-      fstype: btrfs
-      mount: /data/tyson
 
 # backup_dirs:
 #   - /data
