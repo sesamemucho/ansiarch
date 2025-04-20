@@ -1,1 +1,0 @@
-/usr/bin/pacman --noconfirm --noprogressbar --needed --sync a2ps acpi alacritty bind bash-completion cmake doas emacs htop lsof man python-pip python-pipx python-setuptools starship syncthing tmux unzip wget
