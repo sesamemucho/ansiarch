@@ -12,8 +12,7 @@ use_wireless: no
 wired_interface: enp3s0
 boot_partition_suffix: '1'
 root_partition_suffix: '2'
-root_filesystem: 'btrfs'
-luks_keyfile: home_keyfile
+
 ansible_ssh_user: root
 ansible_ssh_private_key_file: files/ansible_archlinux
 
@@ -33,6 +32,8 @@ locales:
   - en_US.UTF-8 UTF-8
   - en_US ISO-8859-1
 current_locale: en_US.UTF-8
+
+tailscale_key: A
 
 #use_luks: false
 

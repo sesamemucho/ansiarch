@@ -6,4 +6,6 @@
   loop: "{{ host_config[disk_category]|dict2items }}"
   loop_control:
     loop_var: outer_item
+  # vars:
+  #   outer_item: "{{ host_config[disk_category]|dict2items }}"
   when: 'disk_category in host_config'

@@ -40,9 +40,6 @@ data_disks:
       fstype: btrfs
       mount: /data
 
-# backup_dirs:
-#   - /data
-
 config_roles:
   - pkgs_basic
   - pkgs_admin
@@ -53,6 +50,8 @@ config_roles:
   # - my_arch_pkgs
   - dotfiles
   - emacs_config
+  - jellyfin
+  - calibre
 
-# nfs_server:
-#   - /data
+nfs_server:
+  - /data

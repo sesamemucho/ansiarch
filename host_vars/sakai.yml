@@ -20,11 +20,12 @@ config_roles:
   - desktop
   - pkgs_media
   - pkgs_dev
+  - vm
   - dotfiles
 
 nfs_client:
   - name: share-data
-    host: hannah
+    host: metatron
     src: /data
     dest: /share/data
 

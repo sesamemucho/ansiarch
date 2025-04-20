@@ -1,6 +1,57 @@
 ---
 ansible_host: 192.168.122.250
-install_drive: /dev/vda
-boot_partition_suffix: '2'
-root_partition_suffix: '3'
+
+ipa:
+  enp3s0:
+    type: wired
+    style: dhcp
+  wlp2s0:
+    type: wireless
+    style: dhcp
+
 boottype: efi
+tailscale_key_id: A
+
+use_luks: no
+
+install_disks:
+  /dev/vda:
+    boot:
+      number: 1
+      suffix: 1
+      label: gpt
+      start: 0%
+      end:  512MB
+      flags:
+        - boot
+        - esp
+      fstype: vfat
+      mount:
+    root:
+      number: 2
+      suffix: 2
+      label: gpt
+      start: 512MB
+      end:  100%
+      opts: -F32
+      fstype: btrfs
+      mount: /root
+
+config_roles:
+  - pkgs_basic
+  - pkgs_admin
+  - emacs_config
+  - my_arch_pkgs
+  - nfs
+  - desktop
+  - pkgs_media
+  - pkgs_dev
+  - vm
+  - dotfiles
+  - tailscale
+
+# nfs_client:
+#   - name: share-data
+#     host: metatron
+#     src: /data
+#     dest: /share/data

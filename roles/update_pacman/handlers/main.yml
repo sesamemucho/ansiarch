@@ -1,2 +1,12 @@
 ---
 # handlers file for update_pacman
+- name: Reboot if needed
+  ansible.builtin.reboot:
+  when: not use_luks
+  listen: "Reboot"
+
+- name: Tell user to reboot (luks)
+  ansible.builtin.debug:
+    msg: "inform: Please reboot machine"
+  when: use_luks
+  listen: "Reboot"

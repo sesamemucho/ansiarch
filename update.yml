@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+    - name: Update pacman packages
+      include_role:
+        name: update_pacman

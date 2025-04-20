@@ -3,11 +3,26 @@
   become: yes
 
   tasks:
+    - name: Make sure systemd-resolved is ready and willing, for DNS
+      ansible.builtin.systemd:
+        state: started
+        enabled: true
+        name: systemd-resolved
+
+    - name: Create a symbolic link for resolv.conf
+      ansible.builtin.file:
+        src: /run/systemd/resolve/stub-resolv.conf
+        dest: /etc/resolv.conf
+        owner: root
+        group: root
+        state: link
+        force: true
+
     - name: Set up disks, if requested
       ansible.builtin.include_role:
         name: "setup_disk"
       vars:
-         disk_category: "install_disks"
+         disk_category: "data_disks"
 
     - name: Handle networking, just in case of changes
       ansible.builtin.include_role:
@@ -19,9 +34,9 @@
       ansible.builtin.include_role:
         name: "update_pacman"
 
-    - name: Set up NFS, if requested
-      ansible.builtin.include_role:
-        name: "nfs"
+    # - name: Set up NFS, if requested
+    #   ansible.builtin.include_role:
+    #     name: "nfs"
 
     - name: Set up NTP; everyone needs this
       ansible.builtin.include_role:

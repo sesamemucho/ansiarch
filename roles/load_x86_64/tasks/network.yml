@@ -30,8 +30,8 @@
     - name: Set up for ansible ssh
       ansible.builtin.command: cp -p /root/.ssh/authorized_keys "{{ root_top }}root/.ssh/"
 
-    - name: Make sure systemd-resolved is ready and willing
-      ansible.builtin.command: arch-chroot /mnt /usr/bin/systemctl enable --now systemd-resolved"
+    # - name: Make sure systemd-resolved is ready and willing
+    #   ansible.builtin.command: arch-chroot /mnt /usr/bin/systemctl enable --now systemd-resolved
 
   when: ansible_nodename == 'gabriel'
 

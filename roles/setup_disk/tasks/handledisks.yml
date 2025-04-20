@@ -1,9 +1,16 @@
 ---
+# - name: Print stuff
+#   ansible.builtin.debug:
+#     msg: "outer_item: {{ outer_item }}"
+
+# - name: Bye
+#   meta: end_play
+
 - name: Query about wiping install disks
   block:
-  - name: wut
+  - name: OK TO WIPE **INSTALL** DISK? yes or no
     ansible.builtin.pause:
-        prompt: "OK to wipe disk?"
+        prompt: "OK TO WIPE **INSTALL** DISK?"
     register: wipe_p
 
   - name: doit

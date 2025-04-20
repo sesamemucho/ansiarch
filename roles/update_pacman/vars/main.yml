@@ -1,2 +1,4 @@
 ---
 # vars file for update_pacman
+my_host: "{{ aa_host if ansible_nodename == 'gabriel' else inventory_hostname }}"
+use_luks: "{{ hostvars[my_host]['use_luks']|default('no')|bool }}"

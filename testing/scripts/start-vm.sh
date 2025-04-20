@@ -3,7 +3,7 @@
 #
 set -u
 set -e
-
+set -x
 here=$(readlink -f $(dirname $0))
 . $here/parse-args.sh
 

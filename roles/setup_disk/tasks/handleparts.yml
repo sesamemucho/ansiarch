@@ -26,6 +26,10 @@
     part_start: "{{ item.value.start }}"
     part_end: "{{ item.value.end }}"
 
+- name: Initialize luks fact
+  ansible.builtin.set_fact:
+    have_root_luks: False
+
 - name: Setup LUKS encryption
   block:
     - name: Setup LUKS encryption key
@@ -65,13 +69,13 @@
   block:
   - name: Create mountpoint
     ansible.builtin.file:
-      path: "{{ item.mount }}"
+      path: "{{ item.value.mount }}"
       state: directory
 
   - name: Mount filesystem
     ansible.posix.mount:
-      path: "{{ item.mount }}"
-      src: "{{ device_name }}{{ item.suffix }}"
-      fstype: "{{ item.fstype }}"
+      path: "{{ item.value.mount }}"
+      src: "{{ device_name }}{{ item.value.suffix }}"
+      fstype: "{{ item.value.fstype }}"
       state: mounted
   when: disk_category != 'install_disks'

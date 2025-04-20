@@ -1,9 +1,16 @@
 ---
-- name: Install packages for desktop Wayland environment
-  kewlfft.aur.aur:
+#      - waypipe
+#      - wdisplays
+
+# - name: Install packages for desktop Wayland environment
+#   kewlfft.aur.aur:
+#     name:
+- name: Install the firewalld service
+  community.general.pacman:
     name:
       - chromium
       - dmenu
+      - dmidecode
       - firefox
       - grim
       - i3blocks
@@ -16,8 +23,6 @@
       - swayimg
       - swaylock
       - waybar
-      - waypipe
-      - wdisplays
       - xorg-xwayland
       - yubico-c
       - yubico-c-client
@@ -25,6 +30,18 @@
       - yubikey-personalization
       - zathura
       - zathura-pdf-poppler
+    extra_args: --noconfirm
+    update_cache: yes
+
+- name: Tex
+  kewlfft.aur.aur:
+    name:
+      - texlive-basic
+      - texlive-bin
+      - texlive-binextra
+      - texlive-latex
+      - texlive-latexextra
+      - texlive-plaingeneric
 
 - name: Printing
   block:
@@ -43,7 +60,7 @@
     - name: Add printers
       ansible.builtin.command:
         cmd:
-          lpadmin -p "{{ item.name }}" -E -v "ipp://{{ item.ip }}/ipp/print" -m everywhere
+          lpadmin -p "{{ item.name }}" -E -v "ipp://{{ item.hostname }}/ipp/print" -m everywhere
       loop:
         "{{ printers }}"
 

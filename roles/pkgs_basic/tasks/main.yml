@@ -77,6 +77,7 @@
       - starship
       - syncthing
       - tmux
+      - unzip
       - wget
 
 - name: Fonts
@@ -123,23 +124,3 @@
     regexp: '^#set bell-style none'
     line: set bell-style none
 
-- name: Do tailscale stuff
-  block:
-    - name: Install tailscale
-      community.general.pacman:
-        name:
-          - tailscale
-          - ethtool
-
-    - name: Start tailscaled service
-      ansible.builtin.systemd:
-        name: tailscaled
-        state: started
-        enabled: true
-
-    - name: Authenticate tailscale
-      include_role:
-        name: artis3n.tailscale
-      vars:
-        tailscale_authkey: "{{ TAILSCALE_KEY }}"
-        tailscale_args: "--ssh"

@@ -1,22 +1,55 @@
 ---
 ipa:
-  eno1:
+  enp3s0:
     type: wired
     style: dhcp
-  wlp3s0:
+  wlp2s0:
     type: wireless
     style: dhcp
 
 boottype: efi
+tailscale_key_id: A
+
+use_luks: yes
+
+install_disks:
+  /dev/nvme0n1:
+    boot:
+      number: 1
+      suffix: p1
+      label: gpt
+      start: 0%
+      end:  512MB
+      flags:
+        - boot
+        - esp
+      fstype: vfat
+      mount:
+    root:
+      number: 2
+      suffix: p2
+      label: gpt
+      start: 512MB
+      end:  100%
+      opts: -F32
+      fstype: btrfs
+      mount: /root
 
 config_roles:
   - pkgs_basic
   - pkgs_admin
   - nfs
   - desktop
+  - pkgs_media
   - pkgs_dev
-  - my_arch_pkgs
+  - vm
   - dotfiles
+  - tailscale
   - emacs_config
+  - my_arch_pkgs
 
-nfs_type: server
+nfs_client:
+  - name: share-data
+    host: metatron
+    src: /data
+    dest: /share/data

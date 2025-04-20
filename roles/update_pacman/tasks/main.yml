@@ -19,6 +19,15 @@
     upgrade: true
   register: pacman_output
 
-- name: Print it
-  ansible.builtin.debug:
-    var: pacman_output.stdout
+# - name: Upgrade the system using yay, only act on AUR packages.
+#   kewlfft.aur.aur:
+#     upgrade: yes
+#     use: yay
+#     aur_only: yes
+#   become: yes
+# #  become_user: aur_builder
+
+- name: Reboot machine, maybe
+  ansible.builtin.shell: echo "Reboot machine"
+  notify: Reboot
+  when: pacman_output.stdout.find('Initcpio image generation successful') != -1

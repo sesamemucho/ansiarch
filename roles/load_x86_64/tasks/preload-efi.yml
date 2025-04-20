@@ -6,15 +6,15 @@
 
 # - name: Synchronize clock via NTP
 #   ansible.builtin.command: timedatectl set-ntp true
-- name: Set up for luks
-  ansible.builtin.set_fact:
-    root_dev: /dev/mapper/root
-  when: use_luks
+# - name: Set up for luks
+#   ansible.builtin.set_fact:
+#     root_dev: /dev/mapper/root
+#   when: use_luks
 
-- name: Set up for not luks
-  ansible.builtin.set_fact:
-    root_dev: '{{ install_drive }}{{ root_partition_suffix }}'
-  when: not use_luks
+# - name: Set up for not luks
+#   ansible.builtin.set_fact:
+#     root_dev: '{{ install_drive }}{{ root_partition_suffix }}'
+#   when: not use_luks
 
 - name: Get device upon which Arch will be installed
   ansible.builtin.set_fact:
@@ -24,85 +24,34 @@
   ansible.builtin.debug:
     msg: "boot fstype: {{ my_host_vars['install_disks'][install_dev].boot.fstype }}"
 
-# - name: Bye
-#   meta: end_play
-
 - name: Run setup_disk
   ansible.builtin.include_role:
     name:  setup_disk
   vars:
     disk_category: 'install_disks'
 
-# - name: Repartition install drive
-#   block:
-#     - name: Wipe install drive and all its partitions
-#       ansible.builtin.command: wipefs --force --all  "{{ install_drive }}"
+- name: Set up convenient root_info
+  ansible.builtin.set_fact:
+    root_info: "{{ my_host_vars['install_disks'][install_dev].root }}"
 
-#     - name: Create EFI partition
-#       community.general.parted:
-#         device: '{{ install_drive }}'
-#         label: gpt
-#         number: 1
-#         part_end: 512MB
-#         name: boot
-#         flags: [esp]
-#         state: present
+- name: Set up convenient facts
+  ansible.builtin.set_fact:
+    root_filesystem: "{{ root_info.fstype }}"
+    root_dev: "{{ have_root_luks|ternary('/dev/mapper/root', install_dev ~ root_info.suffix) }}"
 
-#     - name: Create root partition
-#       parted:
-#         device: '{{ install_drive }}'
-#         label: gpt
-#         number: 2
-#         part_start: 512MB
-#         name: root
-#         # flags: [lvm]
-#         state: present
-
-# - name: Setup LUKS encryption for root filesystem
-#   block:
-#     - name: Setup LUKS encryption key
-#       ansible.builtin.copy:
-#         src: '{{ luks_keyfile }}'
-#         dest: /root/keyfile
-#     - name: Destroy existing LUKS volume
-#       community.crypto.luks_device:
-#         device: '{{ install_drive }}{{ root_partition_suffix }}'
-#         state: absent
-#     - name: Create and open LUKS volume
-#       community.crypto.luks_device:
-#         device: '{{ install_drive }}{{ root_partition_suffix }}'
-#         keyfile: /root/keyfile
-#         name: root
-#         state: opened
-#   when: use_luks
-
-# - name: Create filesystems
-#   block:
-#     - name: Create FAT32 filesystem in boot partition
-#       community.general.filesystem:
-#         dev: '{{ install_drive }}{{ boot_partition_suffix }}'
-#         fstype: vfat
-#         opts: -F32
-#         force: yes
-#     - name: Create filesystem in root volume
-#       community.general.filesystem:
-#         dev: "{{ root_dev }}"
-#         fstype: '{{ root_filesystem }}'
-#         force: yes
-
-- name: Do we have root luks?
+- name: dbg root
   ansible.builtin.debug:
-    var: have_root_luks
+    msg: "root_fs: {{ root_filesystem }}   root_dev: {{ root_dev }}"
 
-- name: Mount filesystems
-  block:
-    - name: Mount root filesystem
-      ansible.posix.mount:
-        path: /mnt
-        src: '/dev/mapper/root'
-        state: mounted
-        fstype: "{{ my_host_vars['install_disks'][install_dev].root.fstype }}"
-  when: have_root_luks
+# - name: Bye
+#   meta: end_play
+
+- name: Mount root filesystem
+  ansible.posix.mount:
+    path: /mnt
+    src: "{{ root_dev }}"
+    state: mounted
+    fstype: "{{ root_filesystem }}"
 
 - name: Create mountpoint for boot volume
   ansible.builtin.file:
@@ -247,7 +196,7 @@
         owner: root
         group: root
         mode: 0644
-  when: use_luks
+  when: have_root_luks
 
 - name: Set up systemd-boot for non-luks
   block:
@@ -258,7 +207,7 @@
         owner: root
         group: root
         mode: 0644
-  when: not use_luks
+  when: not have_root_luks
 
 - name: Create directory for EFI configuration files
   ansible.builtin.file:
@@ -286,6 +235,17 @@
 
 - name: Setup user account
   block:
+    - name: Create user group
+      ansible.builtin.command:
+        argv:
+          - arch-chroot
+          - /mnt
+          - groupadd
+          - --force
+          - --gid
+          - "{{ user_group_id }}"
+          - "{{ user_group }}"
+
     - name: Create user account
       ansible.builtin.command:
         argv:
@@ -293,7 +253,10 @@
           - /mnt
           - useradd
           - --create-home
-          - --user-group
+          - --gid
+          - "{{ user_group }}"
+          - --uid
+          - "{{ user_id }}"
           - --groups
           - wheel
           - "{{ user_name }}"
@@ -338,4 +301,4 @@
   async: 0
   poll: 0
   ignore_errors: true
-  when: not use_luks
+  when: not have_root_luks

@@ -1,0 +1,28 @@
+---
+# tasks file for vm
+- name: VM setup
+  block:
+    - name: Install dev packages for VM work
+      community.general.pacman:
+        name:
+          - dmidecode
+          - dnsmasq
+          - edk2-ovmf
+          - net-tools
+          - qemu
+          - vagrant
+          - virt-manager
+          - virt-viewer
+    - name: Enable service libvirt
+      ansible.builtin.systemd:
+        name: libvirtd
+        enabled: yes
+        state: started
+
+    - name: Add user to libvirt-controlling group
+      ansible.builtin.user:
+        name: '{{ user_name }}'
+        groups: libvirt
+        append: yes
+
+  become: true

@@ -5,13 +5,36 @@ ipa:
     style: dhcp
 
 boottype: efi
+tailscale_key_id: A
 
 use_luks: no
 
-diskinfo:
+install_disks:
+  /dev/sda:
+    boot:
+      number: 1
+      suffix: 1
+      label: gpt
+      start: 0%
+      end:  512MB
+      flags:
+        - boot
+        - esp
+      fstype: vfat
+      mount:
+    root:
+      number: 2
+      suffix: 2
+      label: gpt
+      start: 512MB
+      end:  100%
+      opts: -F32
+      fstype: btrfs
+      mount: /root
+
+data_disks:
   /dev/sdb:
-    - dev: /dev/sdb
-      partname: data
+    data:
       number: 1
       suffix: 1
       label: gpt
@@ -20,9 +43,6 @@ diskinfo:
       fstype: btrfs
       mount: /data
 
-backup_dirs:
-  - /data
-
 config_roles:
   - pkgs_basic
   - pkgs_admin
@@ -30,9 +50,14 @@ config_roles:
   - desktop
   - pkgs_dev
   - pkgs_media
+  - nfs
   # - my_arch_pkgs
   - dotfiles
   - emacs_config
+  - tailscale
 
-#nfs_server:
-#  - /data
+nfs_client:
+  - name: share-data
+    host: metatron
+    src: /data
+    dest: /share/data

@@ -6,15 +6,6 @@
 
 declare -i retval=0
 
-# Not using this yet
-# # Make sure there is a luks keyfile
-# luks_keyfile=$(get_ansible_var.sh luks_keyfile)
-# if [[ ! -r $luks_keyfile ]]
-# then
-#   echo "Luks keyfile ($luks_keyfile) not found"
-#   let $(( retval++ ))
-# fi
-
 ssh_key=$(#!/usr/bin/bash
 #
 # This script initializes Arch linux on a Raspberry Pi so that we can
