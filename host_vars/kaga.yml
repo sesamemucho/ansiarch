@@ -1,9 +1,9 @@
 ---
 ipa:
-  enp3s0:
+  enp3s31f6:
     type: wired
     style: dhcp
-  wlp2s0:
+  wlp147s0:
     type: wireless
     style: dhcp
 
@@ -34,6 +34,7 @@ install_disks:
       opts: -F32
       fstype: btrfs
       mount: /root
+      use_luks: true
 
 config_roles:
   - pkgs_basic
@@ -51,5 +52,5 @@ config_roles:
 nfs_client:
   - name: share-data
     host: metatron
-    src: /data
+    src: /data/top
     dest: /share/data

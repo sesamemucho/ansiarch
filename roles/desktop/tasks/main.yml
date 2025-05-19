@@ -57,18 +57,18 @@
         enabled: true
         name: cups
 
-    - name: Add printers
-      ansible.builtin.command:
-        cmd:
-          lpadmin -p "{{ item.name }}" -E -v "ipp://{{ item.hostname }}/ipp/print" -m everywhere
-      loop:
-        "{{ printers }}"
+    # - name: Add printers
+    #   ansible.builtin.command:
+    #     cmd:
+    #       lpadmin -p "{{ item.name }}" -E -v "ipp://{{ item.hostname }}/ipp/print" -m everywhere
+    #   loop:
+    #     "{{ printers }}"
 
-    - name: Set default printer
-      ansible.builtin.command:
-        cmd:
-          lpadmin -d "{{ item.name }}"
-      loop:
-        "{{ printers }}"
-      when:
-        item.default == true
+    # - name: Set default printer
+    #   ansible.builtin.command:
+    #     cmd:
+    #       lpadmin -d "{{ item.name }}"
+    #   loop:
+    #     "{{ printers }}"
+    #   when:
+    #     item.default == true

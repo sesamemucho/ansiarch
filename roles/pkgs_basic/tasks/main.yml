@@ -52,6 +52,16 @@
   become: yes
   become_user: aur_builder
 
+- name: Rank Arch mirrors
+  block:
+    - name: Install the reflector package (for rankmirrors)
+      community.general.pacman:
+        name:
+          - reflector
+        update_cache: yes
+    - name: filter the fastest mirrors that support HTTPS
+      ansible.builtin.shell: reflector --verbose --latest 10 --country "{{ reflector_countries }}" --sort rate --save /etc/pacman.d/mirrorlist
+
 - name: install and update basic packages
   community.general.pacman:
     name:

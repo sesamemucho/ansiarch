@@ -40,6 +40,12 @@
       community.crypto.luks_device:
         device: '{{ device_name }}{{ item.value.suffix }}'
         state: absent
+    - name: Set up fact for luks device
+      ansible.builtin.set_fact:
+        luks_dev: "{{ device_name }}{{ item.value.suffix }}"
+    - name: Print device for luks
+      ansible.builtin.debug:
+        msg:  "luks device is {{ luks_dev }}"
     - name: Create and open LUKS volume
       community.crypto.luks_device:
         device: '{{ device_name }}{{ item.value.suffix }}'

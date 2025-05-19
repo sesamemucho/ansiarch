@@ -38,6 +38,7 @@
   ansible.builtin.set_fact:
     root_filesystem: "{{ root_info.fstype }}"
     root_dev: "{{ have_root_luks|ternary('/dev/mapper/root', install_dev ~ root_info.suffix) }}"
+#    root_part: "{{ root_info.
 
 - name: dbg root
   ansible.builtin.debug:
@@ -180,7 +181,7 @@
   block:
 
     - name: Get UUID for root LUKS volume
-      ansible.builtin.command: blkid -s UUID -o value '{{ install_drive }}{{ root_partition_suffix }}'
+      ansible.builtin.command: blkid -s UUID -o value '{{ luks_dev }}'
       register: root_luks_uuid
       changed_when: false
 

@@ -8,7 +8,6 @@
       - ansible-lint
       - the_silver_searcher
       - valgrind
-      - vagrant
       - gnupg
       - which
       - ispell
@@ -21,6 +20,7 @@
   kewlfft.aur.aur:
     use: makepkg
     name:
+      - vagrant
       - python2
     update_cache: yes
     skip_pgp_check: yes
