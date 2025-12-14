@@ -38,6 +38,12 @@
 
 - name: AUR installs
   block:
+    - name: Remove old yay
+      community.general.pacman:
+        name:
+          yay
+        state: removed
+
     - name: get yay
       kewlfft.aur.aur:
         use: makepkg

@@ -46,7 +46,6 @@ data_disks:
 config_roles:
   - pkgs_basic
   - pkgs_admin
-  # - restic
   - desktop
   - pkgs_dev
   - pkgs_media
