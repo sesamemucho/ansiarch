@@ -44,6 +44,7 @@ data_disks:
       mount: /data
 
 config_roles:
+  - artis3n.tailscale.machine
   - pkgs_basic
   - pkgs_admin
   - desktop
@@ -53,7 +54,6 @@ config_roles:
   # - my_arch_pkgs
   - dotfiles
   - emacs_config
-  - tailscale
 
 nfs_client:
   - name: share-data

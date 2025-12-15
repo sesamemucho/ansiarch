@@ -34,6 +34,9 @@ locales:
 current_locale: en_US.UTF-8
 
 tailscale_key: A
+tailscale_up_skip: true
+# tailscale_authkey: "{{ lookup('vars', 'TAILSCALE_KEY_' + tailscale_key_id) }}"
+tailscale_args: "--ssh"
 
 #use_luks: false
 

@@ -3,8 +3,8 @@ pacstrap_extras:
   bios: 'gptfdisk syslinux'
   efi:  'efibootmgr'
 
-my_host: "{{ aa_host if ansible_nodename == 'gabriel' else inventory_hostname }}"
-root_top: "{{ '/mnt/' if ansible_nodename == 'gabriel' else '/' }}"
+my_host: "{{ aa_host if ansible_facts['nodename'] == 'gabriel' else inventory_hostname }}"
+root_top: "{{ '/mnt/' if ansible_facts['nodename'] == 'gabriel' else '/' }}"
 my_host_vars: "{{ hostvars[my_host] }}"
 niclist: "{{ hostvars[my_host]['ipa']|dict2items }}"
 my_boottype: "{{ hostvars[my_host]['boottype'] }}"

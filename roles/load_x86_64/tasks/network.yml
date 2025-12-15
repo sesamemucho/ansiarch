@@ -33,7 +33,7 @@
     # - name: Make sure systemd-resolved is ready and willing
     #   ansible.builtin.command: arch-chroot /mnt /usr/bin/systemctl enable --now systemd-resolved
 
-  when: ansible_nodename == 'gabriel'
+  when: ansible_facts["nodename"] == 'gabriel'
 
 - name: Network stuff for configure
   block:
@@ -47,7 +47,7 @@
         enabled: true
         name: systemd-resolved
 
-  when: ansible_nodename != 'gabriel'
+  when: ansible_facts["nodename"] != 'gabriel'
 
 # - name: Setup netctl
 #   block:

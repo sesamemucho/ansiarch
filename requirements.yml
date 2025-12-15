@@ -8,5 +8,4 @@ collections:
 
   - name: kewlfft.aur
 
-roles:
-  - src: artis3n.tailscale
+  - name: artis3n.tailscale

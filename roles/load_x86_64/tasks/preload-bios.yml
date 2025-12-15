@@ -2,7 +2,7 @@
 - name: Abort if the host is not booted from the Arch install media
   ansible.builtin.fail:
     msg: "This host is not booted from the Arch install media!"
-  when: ansible_nodename != 'gabriel'
+  when: ansible_facts["nodename"] != 'gabriel'
 
 # - name: Synchronize clock via NTP
 #   ansible.builtin.command: timedatectl set-ntp true
