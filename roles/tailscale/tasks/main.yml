@@ -1,0 +1,33 @@
+---
+# tasks file for tailscale
+- name: Install tailscale
+  community.general.pacman:
+    name:
+      - tailscale
+      - ethtool
+
+- name: Start tailscaled service
+  ansible.builtin.systemd:
+    name: tailscaled
+    state: started
+    enabled: true
+
+# - name: debug ts 1
+#   ansible.builtin.debug:
+#     msg: "msg={{ lookup('vars', 'TAILSCALE_KEY_' + tailscale_key_id) }}"
+
+# - name: Import a role
+#   artis3n.tailscale:
+#   vars:
+#     tailscale_up_skip: true
+#     # tailscale_authkey: "{{ lookup('vars', 'TAILSCALE_KEY_' + tailscale_key_id) }}"
+#     tailscale_args: "--ssh"
+
+    
+- name: Authenticate tailscale
+  include_role:
+    name: artis3n.tailscale
+  vars:
+    tailscale_up_skip: true
+    # tailscale_authkey: "{{ lookup('vars', 'TAILSCALE_KEY_' + tailscale_key_id) }}"
+    tailscale_args: "--ssh"
