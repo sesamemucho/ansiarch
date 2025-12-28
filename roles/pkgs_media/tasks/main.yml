@@ -9,6 +9,8 @@
       - pipewire-docs
       - pipewire-pulse
       - wireplumber
+  tags:
+    - install
 
 # No longer in extra
 # aur version is orphaned
@@ -29,6 +31,8 @@
       - zoom
   become: yes
   become_user: aur_builder
+  tags:
+    - install
 
 # This is fragile, but I can't use systemd --user stuff unless the
 # user is logged in, and at this point, the user hasn't logged in yet.

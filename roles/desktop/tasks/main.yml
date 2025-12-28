@@ -19,6 +19,8 @@
       - yubikey-personalization
     extra_args: --noconfirm
     update_cache: yes
+  tags:
+    - install
 
 - name: Install wayland packages
   community.general.pacman:
@@ -34,6 +36,8 @@
       - zathura
       - zathura-pdf-poppler
   when: aa_display_type == 'wayland'
+  tags:
+    - install
 
 - name: Install X11 packages
   community.general.pacman:
@@ -44,6 +48,8 @@
       - xorg
       - xorg-xinit
   when: aa_display_type == 'x11'
+  tags:
+    - install
 
 - name: Tex
   kewlfft.aur.aur:
@@ -54,6 +60,8 @@
       - texlive-latex
       - texlive-latexextra
       - texlive-plaingeneric
+  tags:
+    - install
 
 - name: Printing
   block:
@@ -62,6 +70,8 @@
         name:
           - cups
         state: present
+      tags:
+        - install
 
     - name: Start CUPS service
       ansible.builtin.systemd:

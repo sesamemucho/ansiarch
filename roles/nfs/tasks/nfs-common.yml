@@ -3,6 +3,8 @@
   kewlfft.aur.aur:
     name:
       - nfs-utils
+  tags:
+    - install
 
 - name: permit traffic in public zone for various services
   ansible.posix.firewalld:

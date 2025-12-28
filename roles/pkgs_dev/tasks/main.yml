@@ -15,6 +15,8 @@
       - valgrind
       - which
     update_cache: yes
+  tags:
+    - install
 
 - name: Install dev packages from aur
   kewlfft.aur.aur:
@@ -26,6 +28,8 @@
     skip_pgp_check: yes
   become: yes
   become_user: aur_builder
+  tags:
+    - install
 
 # - name: Python setup
 #   block:

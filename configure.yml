@@ -33,6 +33,8 @@
     - name: Update pacman and keys
       ansible.builtin.include_role:
         name: "update_pacman"
+      tags:
+        - install
 
     # - name: Set up NFS, if requested
     #   ansible.builtin.include_role:
