@@ -1,5 +1,10 @@
 ---
 # Sysadmin stuff
+- name: Make sure ssh works for the system
+  ansible.builtin.template:
+    src: "sshd_config.j2"
+    dest: "/etc/ssh/sshd_config"
+
 - name: Ensure basic firewalld configuration
   block:
     - name: Install the firewalld service
