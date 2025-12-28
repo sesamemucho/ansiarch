@@ -2,18 +2,18 @@
 - name: Install dev packages
   community.general.pacman:
     name:
-      - mlocate
-      - texinfo
       - ansible
       - ansible-lint
-      - the_silver_searcher
-      - valgrind
-      - gnupg
-      - which
-      - ispell
       - bind-tools
+      - gnupg
+      - ispell
+      - mlocate
       - python
       - python-pipx
+      - texinfo
+      - the_silver_searcher
+      - valgrind
+      - which
     update_cache: yes
 
 - name: Install dev packages from aur

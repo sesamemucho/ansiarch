@@ -3,6 +3,17 @@
 :END:
 #+title: ansible-archlinux
 #+filetags: :project:
+#+author: sesamemucho
+#+hugo_base_dir: /home/bob/Projects/web/sesamemucho.org
+#+hugo_publishdate: 2025-11-16T12:16:53-0800
+#+date: 2025-11-16T12:16:53-0800
+#+hugo_auto_set_lastmod: t
+#+toc: headlines 3
+#+draft: false
+#+hugo_section: gubber
+#+hugo_custom_front_matter: :summary "I NEED A SUMMARY"
+#+hugo_bundle: gubber
+#+export_file_name: index
 
 * Project name: ansiarch
 

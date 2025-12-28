@@ -7,8 +7,11 @@
 # - http://support.ntp.org/bin/view/Support/GettingStarted
 # - the ntp.conf man page
 
-# Associate to Arch's NTP pool
-{% for svr in host_config['ntp_servers'] %}
+{% for svr in host_config['local_ntp_servers'] %}
+server {{svr}}
+{% endfor %}
+
+{% for svr in host_config['remote_ntp_servers'] %}
 server {{svr}}
 {% endfor %}
 

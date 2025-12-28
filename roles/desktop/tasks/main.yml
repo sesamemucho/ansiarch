@@ -5,18 +5,25 @@
 # - name: Install packages for desktop Wayland environment
 #   kewlfft.aur.aur:
 #     name:
-- name: Install the firewalld service
+- name: Install desktop packages
   community.general.pacman:
     name:
       - chromium
       - dmenu
       - dmidecode
       - firefox
-      - grim
-      - i3blocks
-      - i3status
-      - i3-wm
       - libreoffice
+      - yubico-c
+      - yubico-c-client
+      - yubikey-manager
+      - yubikey-personalization
+    extra_args: --noconfirm
+    update_cache: yes
+
+- name: Install wayland packages
+  community.general.pacman:
+    name:
+      - grim
       - sway
       - swaybg
       - swayidle
@@ -24,14 +31,19 @@
       - swaylock
       - waybar
       - xorg-xwayland
-      - yubico-c
-      - yubico-c-client
-      - yubikey-manager
-      - yubikey-personalization
       - zathura
       - zathura-pdf-poppler
-    extra_args: --noconfirm
-    update_cache: yes
+  when: aa_display_type == 'wayland'
+
+- name: Install X11 packages
+  community.general.pacman:
+    name:
+      - i3blocks
+      - i3status
+      - i3-wm
+      - xorg
+      - xorg-xinit
+  when: aa_display_type == 'x11'
 
 - name: Tex
   kewlfft.aur.aur:

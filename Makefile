@@ -2,6 +2,7 @@
 DEBUG ?=
 HOST ?= unset
 hosts := $(patsubst host_vars/%.yml,%,$(wildcard host_vars/*.yml))
+TAGS ?=
 
 # Deps:
 #  ansible
@@ -67,7 +68,7 @@ configure:
 	    echo "make HOST=myhost configure"; \
 	    exit; \
 	  fi; \
-	ansible-playbook $(DEBUG) -i inventory.yml -l $(HOST) configure.yml |& tee config-$(HOST).log
+	ansible-playbook $(DEBUG) -i inventory.yml -l $(HOST) configure.yml $(TAGS) |& tee config-$(HOST).log
 
 # Template to create rules for each VM host named in host_vars/
 #

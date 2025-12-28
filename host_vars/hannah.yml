@@ -43,6 +43,8 @@ data_disks:
       fstype: btrfs
       mount: /data
 
+aa_display_type: x11
+
 config_roles:
   - artis3n.tailscale.machine
   - pkgs_basic
@@ -54,9 +56,10 @@ config_roles:
   # - my_arch_pkgs
   - dotfiles
   - emacs_config
+  - container_server
 
 nfs_client:
   - name: share-data
     host: metatron
-    src: /data
+    src: /data/top
     dest: /share/data

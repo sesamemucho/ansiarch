@@ -20,8 +20,10 @@ nfs_server_host: michiba
 
 aa_mach_type: x86_64
 
-ntp_servers:
-  - 10.135.155.3
+# aa_display_type should be x11 or wayland
+aa_display_type: wayland
+
+remote_ntp_servers:
   - 0.arch.pool.ntp.org
   - 1.arch.pool.ntp.org
   - 2.arch.pool.ntp.org

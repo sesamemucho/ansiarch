@@ -8,12 +8,16 @@
       - fakeroot
       - patch
     state: present
+  tags:
+    - install
 
 - name: Install base-devel for AUR and other stuff 2
   community.general.pacman:
     name:
       - base-devel
     state: present
+  tags:
+    - install
 
 - name: Make AUR build user
   ansible.builtin.user:
@@ -51,6 +55,8 @@
         skip_pgp_check: yes
       become: yes
       become_user: aur_builder
+  tags:
+    - install
 
 - name: Make sure package updating is ready
   kewlfft.aur.aur:
@@ -67,6 +73,8 @@
         update_cache: yes
     - name: filter the fastest mirrors that support HTTPS
       ansible.builtin.shell: reflector --verbose --latest 10 --country "{{ reflector_countries }}" --sort rate --save /etc/pacman.d/mirrorlist
+  tags:
+    - install
 
 - name: install and update basic packages
   community.general.pacman:
@@ -95,6 +103,8 @@
       - tmux
       - unzip
       - wget
+  tags:
+    - install
 
 - name: Fonts
   community.general.pacman:
@@ -109,6 +119,8 @@
       - ttf-firacode-nerd
       - ttf-font-awesome
       - ttf-inconsolata
+  tags:
+    - install
 
 - name: For emacs, install and update basic packages
   kewlfft.aur.aur:
@@ -119,6 +131,8 @@
       - ansible-runner
   become: yes
   become_user: aur_builder
+  tags:
+    - install
 
 - name: Other AUR packages
   kewlfft.aur.aur:
@@ -126,6 +140,8 @@
       - ansible-runner
   become: yes
   become_user: aur_builder
+  tags:
+    - install
 
 # Thinking about
    # - interception-tools
